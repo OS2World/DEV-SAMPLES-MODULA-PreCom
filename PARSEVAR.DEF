@@ -1,0 +1,49 @@
+DEFINITION MODULE ParseVar;
+IMPORT SQLPREP;
+(* Manages the host variables
+    Builds list of host variables
+    registers the host variables as found
+    returns ID of host variables
+
+*)
+
+CONST
+
+  MaxVars = 300;
+
+TYPE
+  VarRec = RECORD
+    Name : ARRAY[0..30] OF CHAR;
+    Prefix:ARRAY[0..30] OF CHAR;
+    Suffix:ARRAY[0..10] OF CHAR;  (* used WITH objects TO point TO the data part*)
+    Type : CARDINAL;
+    Len  : CARDINAL;
+    ID   : CARDINAL;
+  END;
+
+  VarArray = RECORD
+    Allocated, used : CARDINAL;
+    Vars : ARRAY[0..MaxVars] OF VarRec;
+  END;
+
+VAR
+
+ ProgVars    : VarArray;
+
+  (* given an input line, get  valid variables *)
+
+PROCEDURE GetVars(Line : ARRAY OF CHAR; VAR InComment : CARDINAL);
+
+  (* given a host variable, return the variable ID*)
+PROCEDURE PrepareSQL(VAR Line : ARRAY OF CHAR; VAR Token: SQLPREP.sqla_tokens);
+PROCEDURE GetID(VarName : ARRAY OF CHAR): LONGCARD;
+PROCEDURE GetVarName(VAR Varname : ARRAY OF CHAR;
+                     VAR type,len : CARDINAL;
+                         ID : LONGCARD);
+PROCEDURE RemoveComment(VAR Line : ARRAY OF CHAR; VAR InComment : CARDINAL);
+PROCEDURE SQLStatement(Line : ARRAY OF CHAR): BOOLEAN;
+
+
+
+END ParseVar.
+

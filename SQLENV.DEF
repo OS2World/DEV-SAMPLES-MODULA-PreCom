@@ -1,0 +1,648 @@
+DEFINITION MODULE SQLEnv;
+(*# call(o_a_size => off,
+         o_a_copy=>off,
+         result_optional=>on,
+         reg_saved => (si, di, ds, st1, st2),
+         reg_param => (),
+         seg_name => none,
+         near_call => off,
+         ds_eq_ss => off) *)
+(*# module(implementation=>off, init_code => off) *)
+(*# name(prefix => none) *)
+(*# data(near_ptr => off,var_enum_size=>off) *)
+(*# check(index=>off,range=>off,overflow=>off,nil_ptr=>off) *)
+
+
+(****************************************************************************
+
+   Module Name	  = SQLENV.H					     12/10/91
+
+   Descriptive Name = External Include File for Environment Commands
+
+
+
+   Function = Include File defining
+		Database Environment Command Interfaces
+		SQL Return Codes in SQLCODE for Environment Commands
+
+   Operating System = OS/2 Extended Edition
+
+****************************************************************************)
+
+FROM SQLDA IMPORT sqlda;
+FROM SQLCA IMPORT sqlca;
+FROM SQL IMPORT sqlchar;
+
+
+(* Interface Parameters/Structures/Return Codes *)
+
+
+(* Parameters for START USING DATABASE *)
+
+CONST
+
+   SQL_USE_SHR     = 'S';       (* USE = Share           *)
+   SQL_USE_EXC     = 'X';       (* USE = Exclusive       *)
+
+(* Sizes for entries in sqledinfo, sqleninfo, sqledbstat, sqleusrstat &
+			sql_dir_entry				     *)
+
+   SQL_ALIAS_SZ		=  8;	    (* Alias name	     *)
+   SQL_USERID_SZ 	=  8;	    (* User Id		     *)
+   SQL_DBNAME_SZ 	=  8;	    (* Database name	     *)
+   SQL_DRIVE_SZ		=  2;	    (* Drive (D:)	     *)
+   SQL_INAME_SZ		=  8;	    (* Internal db name      *)
+   SQL_NNAME_SZ		=  8;	    (* Node name	     *)
+   SQL_DBTYP_SZ		=  20;	    (* Type of database      *)
+   SQL_CMT_SZ		=  30;	    (* Comment		     *)
+   SQL_LOCLU_SZ		=  8;	    (* Local_lu 	     *)
+   SQL_RMTLU_SZ		=  8;	    (* Partner_lu	     *)
+   SQL_MODE_SZ		=  8;	    (* Mode		     *)
+   SQL_NRESERVE_SZ	=  0;	    (* Reserved 	     *)
+   SQL_DBSTAT_ALIAS_SZ	 = 16;	    (* Alias name	     *)
+   SQL_DBSTAT_DBNAME_SZ	 = 16;	    (* Database name	     *)
+   SQL_LONG_NAME_SZ	     = 18;	    (* Host database name    *)
+   SQL_CS_SZ		     = 256;	    (* collating sequence    *)
+   SQL_PARAMETER_SZ	     = 512;	    (* Parameter string      *)
+   SQL_NETID_SZ		     = 8;	    (* Network ID	     *)
+
+(* Parameters for Entry Type in sqledinfo *)
+
+   SQL_HOME              = '2';       (* Database is home      *)
+   SQL_REMOTE            = '1';       (* Database is remote    *)
+   SQL_INDIRECT		     = '0';       (* Database is indirect  *)
+
+(* Parameters for adapter number in sqlectnd *)
+
+   SQL_ADAPTER_0         = 0;	    (* Adapter number 0      *)
+   SQL_ADAPTER_1 	     = 1;	    (* Adapter number 1      *)
+   SQL_ADAPTER_MIN	     = 0;	    (* Minimum adapter number*)
+   SQL_ADAPTER_MAX	     = 1;	    (* Maximum adapter number*)
+
+(* Definitions of constants used for Structure IDs *)
+
+  SQL_DCS_STR_ID 	     = 0100H;    (* DCS directory entry id	 *)
+  SQL_NODE_STR_ID	     = 0100H;    (* Catalog node struct id	 *)
+
+(* Parameters for protcol types in sqlectnd *)
+
+   SQL_PROTOCOL_APPC	  = 00H;	    (* APPC			  *)
+   SQL_PROTOCOL_NETB	  = 01H;	    (* NETBIOS			  *)
+   SQL_PROTOCOL_APPN	  = 02H;	    (* APPN			  *)
+
+(* Parameters for New Create Database api *)
+
+   SQL_CS_SYSTEM 	 =  0;	    (* Coll. Seq. from System	 *)
+   SQL_CS_USER		 = -1;	    (* Coll. Seq. from User	 *)
+   SQL_CS_NONE		 = -2;	    (* Coll. Seq. - none	 *)
+
+
+
+(******************************************)
+(* Database Description Block structure   *)
+(******************************************)
+
+TYPE
+  sqledbdesc = RECORD
+   sqldbdid : ARRAY[1..8] OF CHAR;		   (* eye catcher		 *)
+   sqldbccp : LONGINT;		   (* comment code page 	 *)
+   sqldbcss : LONGINT;		   (* Source of collating seq.	 *)
+   sqldbudc : ARRAY [0..SQL_CS_SZ] OF CHAR;	   (* user-defined collating seq.*)
+   sqldbcmt : ARRAY [0..SQL_CMT_SZ+1] OF CHAR;  (* comment			 *)
+ END;
+
+(******************************************)
+(* Database Directory Scan data structure *)
+(******************************************)
+
+  sqledinfo = RECORD
+   alias   : ARRAY [0..SQL_ALIAS_SZ-1] OF CHAR;	   (* Alias name		 *)
+   dbname  : ARRAY [0..SQL_DBNAME_SZ-1] OF CHAR;    (* Database name		 *)
+   drive   : ARRAY [0..SQL_DRIVE_SZ-1] OF CHAR;	   (* Drive 'd:'                 *)
+   intname : ARRAY [0..SQL_INAME_SZ-1] OF CHAR;    (* Database subdirectory	 *)
+   nodename: ARRAY [0..SQL_NNAME_SZ-1] OF CHAR;   (* Node name 		 *)
+   dbtype  : ARRAY [0..SQL_DBTYP_SZ-1] OF CHAR;	   (* Release information	 *)
+   comment : ARRAY [0..SQL_CMT_SZ-1] OF CHAR;	   (* Comment			 *)
+   codepg  : CARDINAL;		   (* Code page of comment	 *)
+   type    : CHAR;			   (* Entry type - defines above *)
+  END;
+
+(**************************************)
+(* Node Directory Scan data structure *)
+(**************************************)
+
+sqleninfo = RECORD
+   nodename : ARRAY [0..SQL_NNAME_SZ-1] OF CHAR;    (* Node name	      *)
+   local_lu : ARRAY [0..SQL_LOCLU_SZ-1] OF CHAR;    (* Local_lu name	      *)
+   partner_lu : ARRAY [0..SQL_RMTLU_SZ-1] OF CHAR;  (* Partner_lu name       *)
+   mode : ARRAY [0..SQL_MODE_SZ-1] OF CHAR;	     (* Mode		      *)
+   comment : ARRAY [0..SQL_CMT_SZ-1] OF CHAR;	     (* Comment 	      *)
+   comm_codepage : CARDINAL; 	     (* Comment code page     *)
+   adapter : CARDINAL;		     (* Adapter # for Net Bios*)
+   networkid :ARRAY [0..SQL_NETID_SZ-1] OF CHAR;   (* Network ID	      *)
+   protocol : CHAR  ;		     (* Protocol type	      *)
+ END;
+
+
+
+(**********************************************)
+(* General Catalog Node structures and defines*)
+(**********************************************)
+
+sqle_node_struct = RECORD;
+ struct_id : CARDINAL;			 (* Structure Identifier  *)
+ codepage  : CARDINAL;			 (* Codepage for comment  *)
+ comment   : ARRAY [0..SQL_CMT_SZ + 1-1] OF CHAR;	 (* Comment		  *)
+ nodename  : ARRAY [0..SQL_NNAME_SZ + 1-1] OF CHAR;	 (* Node name		  *)
+ protocol  : CHAR;			 (* Protocol Type	  *)
+END;
+
+
+sqle_node_appc	= RECORD		 (* For APPC protocol	  *)
+  local_lu : ARRAY [0..SQL_LOCLU_SZ ] OF CHAR;	 (* Local_lu name	  *)
+  partner_lu : ARRAY[0..SQL_RMTLU_SZ ]OF CHAR;  (* Alias Partner_lu name *)
+  mode : ARRAY [0..SQL_MODE_SZ ]OF CHAR;	 (* Mode		  *)
+END;
+
+
+sqle_node_netb	= RECORD		 (* For Netbios Protocol  *)
+   adapter : CARDINAL;			 (* Adapter Number	  *)
+   remote_nname : ARRAY [0..SQL_RMTLU_SZ ] OF CHAR;(* Remote Workstation name*)
+END;
+
+
+sqle_node_appn = RECORD			 (* For APPN protocol	  *)
+   networkid : ARRAY [0..SQL_NETID_SZ ] OF CHAR;	 (* Network ID		  *)
+   remote_lu : ARRAY [0..SQL_RMTLU_SZ ] OF CHAR;	 (* Remoter lu name	  *)
+   local_lu  : ARRAY [0..SQL_LOCLU_SZ ] OF CHAR;	 (* Local_lu name	  *)
+   mode      : ARRAY [0..SQL_MODE_SZ ] OF CHAR;	 (* Mode		  *)
+END;
+
+
+
+(* Sizes for entries in sqlesystat & sqleusrstat *)
+
+CONST
+  SQL_PRODNAME_SZ	 = 30;	    (* Product name	     *)
+  SQL_COMPID_SZ		 = 9;	    (* Component Id	     *)
+  SQL_CORRLVL_SZ 	 = 8;	    (* Corrective serv level *)
+  SQL_RLSLVL_SZ		 = 4;	    (* Release level	     *)
+
+(* Defines for STATUS parameter on Collect Database Status *)
+
+  SQL_OPSTAT_SYSTEM	  = 1;	    (* Collect system status *)
+  SQL_OPSTAT_DATABASE = 2;	    (* Collect database stat *)
+  SQL_OPSTAT_ALL 	  = 3;	    (* Collect all status    *)
+
+(* Defines for OBJECT parameter on Collect Database Status *)
+
+  SQL_OBJECT_DATABASE	  = 1;	    (* Specified database    *)
+  SQL_OBJECT_DRIVE	      = 2;	    (* Specified drive	     *)
+  SQL_OBJECT_LOCAL	      = 3; 	    (* All local databases   *)
+
+(* Defines for 'location' field in sqledbstat *)
+
+  SQL_LOCAL_TYPE 	=  'L';
+  SQL_REMOTE_TYPE	=  'R';
+
+(* Defines for 'trans_state' field in sqleusrstat *)
+
+  SQL_TRANS_STATE_STARTED  = 'S';
+  SQL_TRANS_STATE_READ	   = 'R';
+  SQL_TRANS_STATE_CHANGED  = 'C';
+
+(* Defines for 'lock_state' field in sqleusrstat *)
+
+  SQL_LOCK_STATE_WAIT	  = 'W';
+  SQL_LOCK_STATE_NOWAIT	  = 'N';
+
+
+
+(*******************************************)
+(* Collect Database Status data structures *)
+(*******************************************)
+
+(* System Status data structure *)
+
+TYPE
+
+  sqlesystat = RECORD
+    current_time    : LONGCARD;
+	time_zone_disp  : LONGINT;
+    product_name    : ARRAY[0..SQL_PRODNAME_SZ-1] OF CHAR;
+    component_id    : ARRAY[0.. SQL_COMPID_SZ-1] OF CHAR;
+    reserved        : CHAR;			   (* Reserved byte  *)
+    release_lvl     : ARRAY[0.. SQL_RLSLVL_SZ-1] OF CHAR;
+    corr_serv_lvl   : ARRAY[0.. SQL_CORRLVL_SZ-1] OF CHAR;
+END;
+
+(* Database Status data structure *)
+
+  sqledbstat = RECORD
+    backup_time     : LONGCARD; 	    (* Last backup time 	  *)
+    time_zone_disp  : LONGINT;    (* Time zone of backup time   *)
+    connects        : CARDINAL;		    (* Number of current users	  *)
+    db_alias        : ARRAY[0.. SQL_DBSTAT_ALIAS_SZ-1] OF CHAR;  (* Alias name	  *)
+    db_name         : ARRAY[0.. SQL_DBSTAT_DBNAME_SZ-1] OF CHAR;  (* Database name	  *)
+    location        : CHAR;		    (* Local / Remote Database	  *)
+    reserved        : CHAR;		    (* Reserved byte		  *)
+    drive           : ARRAY[0.. SQL_DRIVE_SZ-1] OF CHAR;     (* Drive containing database  *)
+    node            : ARRAY[0.. SQL_NNAME_SZ-1] OF CHAR;	    (* Node containing database   *)
+    db_type         : ARRAY[0.. SQL_DBTYP_SZ-1] OF CHAR;   (* "OS2 DBM"                  *)
+END;
+
+
+(* User Status data structure *)
+
+ sqleusrstat = RECORD
+    con_trans    : LONGCARD;		    (* Transactions since connect *)
+    con_reqs     : LONGCARD; 		    (* Requests since connect	  *)
+    cur_reqs     : LONGCARD;		    (* Requests current transact  *)
+    connect_time : LONGCARD;	        (* Time since connect	  *)
+    trans_time   : LONGCARD;		    (* Time since current transact*)
+    authid       : ARRAY[0.. SQL_USERID_SZ-1] OF CHAR;   (* User's Id                  *)
+    node         : ARRAY[0.. SQL_NNAME_SZ-1] OF CHAR; (* Nodename of connected user *)
+    authority_lvl: CARDINAL;	        (* User's authority level     *)
+    trans_state  : CHAR; 	            (* Transaction state	  *)
+    lock_state   : CHAR;		        (* Transaction lock state	  *)
+END;
+
+
+
+(*******************************************)
+(* DDCS Directory Entry Data Structure	   *)
+(*******************************************)
+
+sql_dir_entry = RECORD
+    struct_id : CARDINAL;		      (* Structure Identifier	    *)
+    release   : CARDINAL;		      (* Release level of entry     *)
+    codepage  : CARDINAL;		      (* Codepage of comment	    *)
+    comment   : ARRAY[0.. SQL_CMT_SZ ] OF CHAR;   (* Directory entry comment    *)
+    ldb       : ARRAY[0.. SQL_DBNAME_SZ ] OF CHAR;    (* Local DB name		    *)
+    tdb       : ARRAY[0.. SQL_LONG_NAME_SZ] OF CHAR; (* Target (host) DB name	    *)
+    ar        : ARRAY[0.. SQL_DBNAME_SZ ] OF CHAR;     (* Appl. requester DLL name   *)
+    parm      : ARRAY[0.. SQL_PARAMETER_SZ ] OF CHAR;(* Parameter string	    *)
+END;
+
+
+
+(********************************************************)
+(* Database Environment Commands -- Function Prototypes *)
+(********************************************************)
+
+
+
+(* ALTER DATABASE PASSWORD *)
+PROCEDURE SQLGALTD(newpwlen : CARDINAL;	(* new password length *)
+		           oldpwlen : CARDINAL;	(* old password length *)
+		           dbnamlen : CARDINAL;	(* database length *)
+		           VAR SQLCA: sqlca;	(* SQLCA *)
+		           VAR newpw,	(* new password *)
+		               oldpw,	(* old password *)
+                       dbnam: ARRAY OF CHAR) : CARDINAL;	(* database *)
+
+(* CATALOG DATABASE *)
+PROCEDURE SQLGCATD	  (commtlen : CARDINAL;	(* comment length *)
+		              nodenmlen : CARDINAL;	(* node name length *)
+		              aliaslen  : CARDINAL;	(* alias length *)
+		              dbnanlen  : CARDINAL;	(* database length *)
+		              dirve     : CHAR;		(* drive *)
+		              comtcodepg: INTEGER;		(* comment code page *)
+		              type      : CHAR;	(* type *)
+		              VAR SQLCA : sqlca; 	(* SQLCA *)
+		              VAR comment,
+		                  nodename,	(* node name *)
+		                  alias,	(* alias *)
+		                  database : ARRAY OF CHAR);	(* database *)
+
+(* GENERIC API FOR CATALOG NODE *)
+PROCEDURE SQLGCATN	  (comtlen    : CARDINAL;	(* comment length *)
+		               nodelen    : CARDINAL;	(* mode length *)
+		               parlulen   : CARDINAL;	(* partner lu length *)
+		               locallulen : CARDINAL;	(* local lu length *)
+		               nodenamelen: CARDINAL;	(* node name length *)
+		               codepg     : CARDINAL;	(* code page *)
+		               VAR SQLCA  : sqlca;	(* SQLCA *)
+		               VAR comment,	(* comment *)
+		                   mode,	(* mode *)
+		                   partner,	(* partner lu *)
+		                   locallu,	(* local lu *)
+		                   nodename : ARRAY OF CHAR): CARDINAL;	(* nodename *)
+
+(* CREATE DATABASE *)
+PROCEDURE SQLGCRED	  (comtlen : CARDINAL;	(* comment length *)
+		               spare1: CARDINAL;	(* spare1, was password length *)
+		               dbnamlen: CARDINAL;	(* database length *)
+		               drive  :CHAR;	(* drive *)
+		               comtcdpg: INTEGER;		(* comment code page *)
+		               VAR comment :ARRAY OF CHAR;	(* comment *)
+		               VAR SQLCA   :sqlca;	(* SQLCA *)
+		               spare2  : ADDRESS;	(* spare2, was password *)
+		               VAR dbname  :ARRAY OF CHAR): CARDINAL;	(* database *)
+
+
+
+(* CHANGE DATABASE COMMENT *)
+PROCEDURE SQLGDCHG (comtlen : CARDINAL;	(* comment length *)
+		           dbnamlen: CARDINAL;	(* database length *)
+		           comtcdpg: INTEGER;		(* comment codepage *)
+		           dirve   : CHAR;	(* drive *)
+		           VAR SQLCA: sqlca;	(* SQLCA *)
+		           VAR comment,	(* comment *)
+		               datebase : ARRAY OF CHAR): CARDINAL;	(* database *)
+
+(* CLOSE DIRECTORY SCAN *)
+PROCEDURE SQLGDCLS	  (handle : CARDINAL;	(* handle *)
+		               VAR SQLCA :sqlca ): CARDINAL;	(* SQLCA *)
+
+ (* GET NEXT DIRECTORY ENTRY *)
+PROCEDURE SQLGDGNE	  (handle: CARDINAL;	(* handle *)
+		               VAR infor : sqledinfo; (* buffer *)
+		               VAR SQLCA : sqlca ) : CARDINAL;	(* SQLCA *)
+
+(* OPEN DIRECTORY SCAN *)
+PROCEDURE SQLGDOPS	  (drive  :CHAR;	(* drive *)
+		              VAR handle: CARDINAL;	(* handle *)
+		              VAR cnt   : CARDINAL; 	(* count *)
+		              VAR SQLCA : sqlca): CARDINAL;	(* SQLCA *)
+
+(* DROP DATABASE *)
+PROCEDURE SQLGDRPD	  (spare1 : CARDINAL;	(* spare1, was password length *)
+		               dbnamlen : CARDINAL;	(* database length *)
+		               VAR SQLCA : sqlca;	(* SQLCA *)
+		               spare2    : ADDRESS;	(* spare2, was password *)
+		               VAR dbname :ARRAY OF CHAR):CARDINAL;	(* database *)
+
+(* FREE DATABASE STATUS RESOURCES *)
+PROCEDURE SQLGFREE	  (VAR SQLCA: sqlca): CARDINAL;	(* SQLCA *)
+
+(* INTERRUPT *)
+PROCEDURE SQLGINTR () : CARDINAL;
+
+(* INSTALL SIGNAL HANDLER *)
+PROCEDURE SQLGISIG	  (VAR SQLCA :sqlca ): CARDINAL;	(* SQLCA *)
+
+(* MIGRATE DATABASE *)
+PROCEDURE SQLGMIGD	  ( dbnamlen : CARDINAL;	(* Database name length *)
+		                pwlen    : CARDINAL;	(* password length *)
+		                VAR dbname,             (* database name *)
+		                    pw   :ARRAY OF CHAR;	(* password *)
+		                VAR SQLCA : sqlca ): CARDINAL;	(* SQLCA pointer *)
+
+(* CLOSE NODE DIRECTORY SCAN *)
+PROCEDURE SQLGNCLS	  (handle : CARDINAL;	(* handle *)
+		              VAR SLQCA :sqlca ): CARDINAL;	(* sqlca *)
+
+(* GET NEXT DATABASE STATUS BLOCK *)
+PROCEDURE SQLGNEXT	  (VAR cnt : CARDINAL; 	(* count pointer *)
+		               VAR buff : ARRAY OF CHAR;	(* buffer pointer *)
+		               VAR SQLCA: sqlca ):CARDINAL;	(* SQLCA *)
+
+	(* GET NEXT NODE ENTRY *)
+PROCEDURE SQLGNGNE	  (handle : CARDINAL;	(* handle *)
+		               VAR infor : sqleninfo; (* buffer *)
+		               VAR SQLCA : sqlca ): CARDINAL;	(* SQLCA *)
+
+(* OPEN NODE DIRECTORY SCAN *)
+PROCEDURE SQLGNOPS	  (VAR handle : CARDINAL; 	(* handle *)
+		               VAR cnd    : CARDINAL; 	(* count *)
+		               VAR SQLCA  : sqlca ): CARDINAL;	(* SQLCA *)
+
+(* COLLECT DATABASE STATUS *)
+PROCEDURE SQLGOPST	  (statusreq : CARDINAL;	(* status requested *)
+		               objtype   : CARDINAL;	(* object type *)
+		               objlen    : CARDINAL;	(* length of object *)
+		               VAR object:ARRAY OF CHAR;	(* object pointer *)
+		               VAR cnd   : CARDINAL; 	(* count pointer *)
+		               VAR buf   : ARRAY OF CHAR;	(* buffer pointer *)
+		               VAR SQLCA : sqlca ):CARDINAL;	(* SQLCA *)
+
+(* DB APPLICATION REMOTE INTERFACE *)
+PROCEDURE SQLGPROC	  (pgmnamlen : CARDINAL;	(* program name length *)
+		               VAR SQLCA : sqlca;	(* SQLCA  *)
+		               VAR path  : ARRAY OF CHAR; 		(* Path Name of program to run *)
+		               VAR SQLDAin : sqlda;	(* input SQLDA *)
+		               VAR SQLDAout: sqlda;	(* output SQLDA *)
+		               VAR SQLCHAR : sqlchar ): CARDINAL;	(* variable length area pointer *)
+
+(* RESTART DATABASE *)
+PROCEDURE SQLGREST	  (spare1 : CARDINAL;	(* spare1, was password length *)
+		               dbnamlen : CARDINAL;	(* database length *)
+		               VAR SQLCA : sqlca;	(* SQLCA *)
+		               spare2    : ADDRESS;	(* spare2, was password *)
+		               VAR dbname : ARRAY OF CHAR): CARDINAL;	(* database *)
+
+(* START DATABASE MANAGER *)
+PROCEDURE SQLGSTAR (): CARDINAL;
+
+(* STOP DATABASE MANAGER *)
+PROCEDURE SQLGSTDM (VAR SQLCA :  sqlca): CARDINAL;	(* SQLCA *)
+
+(* STOP USING DATABASE *)
+PROCEDURE SQLGSTPD	(VAR SQLCA : sqlca ): CARDINAL;	(* SQLCA *)
+
+(* START USING DATABASE *)
+PROCEDURE SQLGSTRD (spare1 : CARDINAL;	(* spare1, was password length *)
+		            dbnamlen : CARDINAL;	(* database length *)
+		            user   : CHAR;	   (* use shared exclusive (S OR X) *)
+		            VAR SQLCA : sqlca;	(* SQLCA *)
+		            spare2   : ADDRESS;	(* spare2, was password *)
+		            VAR dbname : ARRAY OF CHAR): CARDINAL;	(* database *)
+
+(* UNCATALOG DATABASE *)
+PROCEDURE SQLGUNCD	  (dbnmlen : CARDINAL;	(* database length *)
+		              VAR SQLCA : sqlca;	(* SQLCA *)
+		              VAR database: ARRAY OF CHAR): CARDINAL;	(* database *)
+
+(* UNCATALOG NODE *)
+PROCEDURE SQLGUNCN	(nodenamlen : CARDINAL;	(* nodename length *)
+		             VAR SQLCA :  sqlca;	(* SQLCA *)
+		             VAR nodename :ARRAY OF CHAR): CARDINAL;	(* nodename *)
+
+(* GET USER STATUS *)
+PROCEDURE SQLGUSER	  (dbname :  CARDINAL;	(* length of db name *)
+		               VAR name, 	        (* db name pointer *)
+		                   buffer : ARRAY OF CHAR;	(* buffer pointer *)
+		               VAR SQLCA : sqlca ):CARDINAL;	(* SQLCA *)
+
+
+
+(* SQL Return Codes in SQLCODE for Environment Commands *)
+
+CONST
+
+ SQL_RC_INVALID_SQLCA = -1;	(* invalid sqlca    *)
+
+   SQLE_RC_W863		  = 863;	(* only SBCS data allowed	     *)
+
+   SQLE_RC_E953		  = -953;	(* agent heap too small 	     *)
+   SQLE_RC_E957		  = -957;	(* requestor comm heap too small     *)
+   SQLE_RC_E959		  = -959;	(* server comm heap too small	     *)
+   SQLE_RC_E961		  = -961;	(* rqstr remote svcs heap too small  *)
+   SQLE_RC_E962		  = -962;	(* svr remote svcs heap too small    *)
+
+   SQLE_RC_INVNEWLOGP =  993;	(* New log path is invalid	     *)
+   SQLE_RC_INVLOGP	  =  995;	(* Current log path is invalid	     *)
+
+
+
+   SQLE_RC_INVALIAS	  = -1000; (* invalid alias		     *)
+   SQLE_RC_INVDBNAME  = -1001; (* invalid database name	     *)
+   SQLE_RC_INVDRIVE	  = -1002; (* invalid drive		     *)
+   SQLE_RC_INVPSW	  = -1003; (* invalid password		     *)
+   SQLE_RC_INSSTOR	  = -1004; (* insuf storage on file system      *)
+   SQLE_RC_DUPALIAS	  = -1005; (* duplicate alias		     *)
+   SQLE_RC_WRONGCODEPG=	-1006; (* Appl code page does not match db  *)
+   SQLE_RC_INV_NEWPSW =	-1008; (* invalid new password 	     *)
+   SQLE_RC_INVREMOTE  =	-1009; (* invalid remote command	     *)
+
+   SQLE_RC_INVTYPE	  = -1010; (* invalid type 		     *)
+   SQLE_RC_NODRIVE	  = -1011; (* no drive for indirect entry	     *)
+   SQLE_RC_NONODE	  = -1012; (* no nodename for remote entry      *)
+   SQLE_RC_NODB		  = -1013; (* alias or database name not found  *)
+   SQLE_RC_NOMORE	  =  1014; (* no more entries		     *)
+   SQLE_RC_DB_RESTART =	-1015; (* database needs restart	     *)
+   SQLE_RC_INVLLU	  = -1016; (* invalid local_lu alias	     *)
+   SQLE_RC_INVMODE	  = -1017; (* invalid mode 		     *)
+   SQLE_RC_DUPNODE	  = -1018; (* duplicate node name		     *)
+   SQLE_RC_INVNODE	  = -1019; (* invalid node name		     *)
+
+   SQLE_RC_MAXNODE	  = -1020; (* node could not be cataloged	     *)
+   SQLE_RC_NOTNODE	  = -1021; (* nodename not found		     *)
+   SQLE_RC_INSSYS	  = -1022; (* insufficient system resources     *)
+   SQLE_RC_NOCONV	  = -1023; (* communication conversation failed *)
+   SQLE_RC_NOSUDB	  = -1024; (* no start using database issued    *)
+   SQLE_RC_DBACT 	  = -1025; (* databases are active 	     *)
+   SQLE_RC_INVSTRT	  = -1026; (* DATABASE MANAGER already started  *)
+   SQLE_RC_NONODEDIR  =	-1027; (* node directory not found	     *)
+   SQLE_RC_INVRLU	  = -1029; (* partner lu not specified	     *)
+
+   SQLE_RC_MAXDB 	  = -1030; (* database directory full	     *)
+   SQLE_RC_NODBDIR	  = -1031; (* database directory not found      *)
+   SQLE_RC_NOSTARTG	  = -1032; (* START DATABASE MANAGER not issued *)
+   SQLE_RC_DIRBUSY	  = -1033; (* database directory being updated  *)
+   SQLE_RC_DBBAD 	  = -1034; (* database is damaged		     *)
+   SQLE_RC_DB_INUSE	  = -1035; (* database already in use	     *)
+   SQLE_RC_FILEDB	  = -1036; (* database file error		     *)
+   SQLE_RC_FILENODE	  = -1038; (* node directory file error	     *)
+   SQLE_RC_FILEDIR	  = -1039; (* directory file error 	     *)
+
+   SQLE_RC_MAXAPPLS	  = -1040; (* Maximum Number of applications    *)
+   SQLE_RC_MAXDBS	  = -1041; (* Maximum Number of DB started      *)
+   SQLE_RC_SYSERR	  = -1042; (* system error 		     *)
+   SQLE_RC_CATBOOT	  = -1043; (* catalog bootstrap failure	     *)
+   SQLE_RC_INTRRPT	  = -1044; (* request interrupted by ctrl+break *)
+   SQLE_RC_INVINDIR	  = -1045; (* invalid level of indirection      *)
+   SQLE_RC_INVAUTHID  = -1046; (* invalid userid		     *)
+   SQLE_RC_APCONN	  = -1047; (* appl already connect to another db*)
+   SQLE_RC_USEINVALID =	-1048; (* invalid use specified	     *)
+   SQLE_RC_APPSERR	  = -1049; (* appl state in error		     *)
+
+
+
+   SQLE_RC_UNCHOME	  =-1050; (* cannot uncatalog home database    *)
+   SQLE_RC_NODIRDRV	  =-1051; (* db direct. drive does not exist   *)
+   SQLE_RC_NODBDRV	  =-1052; (* database drive does not exist     *)
+   SQLE_RC_INTBUSY	  =-1053; (* interrupt already in progress     *)
+   SQLE_RC_COMMINP	  =-1054; (* commit in progress - no int's     *)
+   SQLE_RC_ROLLINP	  =-1055; (* rollback in progress - no int's   *)
+   SQLE_RC_MAXSCAN	  =-1056; (* maximum allowable scans exceeded  *)
+   SQLE_RC_NODENTRY	  = 1057; (* no entries in directory	     *)
+   SQLE_RC_INVHAND	  =-1058; (* invalid input handle 	     *)
+   SQLE_RC_NOSCAN	  =-1059; (* open scan not issued 	     *)
+
+   SQLE_RC_NOCONNECT  =-1060; (* user lacks connect privilege      *)
+   SQLE_RC_BADPATH	  =-1062; (* database path not found	     *)
+   SQLE_RC_START_OK	  =-1063; (* startdbs successful		     *)
+   SQLE_RC_STOP_OK	  =-1064; (* stopdbs successful		     *)
+   SQLE_RC_DB_BADBINDS= 1065; (* n utilities not bound	     *)
+   SQLE_RC_NOMSG 	  =-1068; (* message file not found	     *)
+   SQLE_RC_INVDROP	  =-1069; (* DB invalid type for drop	     *)
+
+   SQLE_RC_INVDBNAME_PTR = -1070; (* Invalid Database Name ptr	     *)
+   SQLE_RC_INVALIAS_PTR	 = -1071; (* Invalid Alias pointer	     *)
+   SQLE_RC_INVPSW_PTR	 = -1074; (* Invalid Password pointer	     *)
+   SQLE_RC_INVCOMM_PTR	 = -1075; (* Invalid Comment pointer	     *)
+   SQLE_RC_INVCNT_PTR	 = -1076; (* Invalid Count pointer	     *)
+   SQLE_RC_INVHAND_PTR	 = -1077; (* Invalid Handle Pointer	     *)
+   SQLE_RC_INVBUFF_PTR	 = -1078; (* Invalid Buffer pointer	     *)
+   SQLE_RC_INVNODE_PTR	 = -1079; (* Invalid Node Pointer 	     *)
+
+   SQLE_RC_INVLLU_PTR	 = -1080; (* Invalid Local Lu Pointer	     *)
+   SQLE_RC_INVRLU_PTR	 = -1081; (* Invalid Remote Lu Pointer	     *)
+   SQLE_RC_INVMODE_PTR	 = -1082; (* Invalid Mode Pointer 	     *)
+   SQLE_RC_BAD_DBDB	     = -1083; (* Bad Database Description Block    *)
+   SQLE_RC_KSEGSFAIL	 = -1084; (* Cannot Allocate Kernel Segments   *)
+   SQLE_RC_APPHEAPFAIL	 = -1085; (* Cannot Allocate Application heap  *)
+   SQLE_RC_OS2ERROR	     = -1086; (* Unexpected OS/2 error	     *)
+   SQLE_RC_BIND_LIST	 =  1087; (* Bind list could not be opened     *)
+   SQLE_RC_BIND_ERROR	 =  1088; (* Error occurred during bind	     *)
+   SQLE_RC_BIND_INTRRPT	 =  1089; (* Binding was interrupted	     *)
+
+   SQLE_RC_BAD_APP_REL	 = -1090; (* Release number of APP is invalid  *)
+   SQLE_RC_BAD_DB_REL	 = -1091; (* Release number of database bad    *)
+
+   SQLE_RC_INSAUTH	     = -1092; (* Authorization error		     *)
+   SQLE_RC_NOLOGON	     = -1093; (* User not logged on		     *)
+   SQLE_RC_NDBUSY	     = -1094; (* Node dir being updated	     *)
+   SQLE_RC_MAX_NDSCAN	 = -1095; (* Max node scans open		     *)
+   SQLE_RC_REQTYPE	     = -1096; (* Invalid type for requester node   *)
+   SQLE_RC_NODERR	     = -1097; (* Node not found for remote db      *)
+   SQLE_RC_APCONN_SAME	 = -1098; (* appl is already connected to db   *)
+   SQLE_RC_WRPROT_ERR	 = -1099; (* write protect error on diskette   *)
+
+
+
+   SQLE_RC_NODE_WARN	  = -100; (* node not cataloged for database   *)
+   SQLE_RC_REMCONN_ERR	  = -1101; (* remote communications error	     *)
+   SQLE_RC_MIG_NODB	      = -1102; (* No Database Name provided in Call *)
+   SQLE_RC_MIG_OK	      = -1103; (* Migration Successful Message      *)
+   SQLE_RC_INVPROG_PTR	  = -1104; (* Invalid program name pointer     *)
+   SQLE_RC_INV_SPDB	      = -1105; (* Invalid Stop Using Database	     *)
+   SQLE_RC_INVALID_PROC	  = -1106; (* Program invalid		     *)
+   SQLE_RC_INTRP_PROC	  = -1107; (* Program interrupted		     *)
+   SQLE_RC_SYSERR_PROC	  = -1108; (* Unexpected I/O or OS/2 error      *)
+   SQLE_RC_NOFILE_PROC	  = -1109; (* Program file not found	     *)
+   SQLE_RC_ERROR_PROC	  = -1110; (* Program error		     *)
+   SQLE_RC_BADPGN_PROC	  = -1111; (* Invalid DLL name format	     *)
+   SQLE_RC_INSMEM_PROC	  = -1112; (* No memory loading DLL	     *)
+   SQLE_RC_SQLDA_DATATYPE = -1113; (* Data type in output SQLDA changed *)
+   SQLE_RC_SQLDA_LENGTH	  = -1114; (* Data length in output SQLDA change*)
+   SQLE_RC_SQLDA_VARS	  = -1115; (* Number of sqlvars changed in SQLDA*)
+   SQLE_RC_BKP_PEND	      = -1116; (* Backup pending		     *)
+   SQLE_RC_ROLLFWD_PEND	  = -1117; (* Roll forward pending 	     *)
+   SQLE_RC_BKP_INPROG	  = -1118; (* need to rerun the Backup process  *)
+   SQLE_RC_RST_INPROG	  = -1119; (* need to rerun the Restore process *)
+   SQLE_RC_BR_INPROG	  = -1120; (* need to rerun either Backup or    *)
+
+   SQLE_RC_INVNODESTR_PTR  = -1121; (* Node strucutre ptr invalid	     *)
+   SQLE_RC_INVPROTOCOL_PTR = -1122; (* Protocol strucutre ptr invalid    *)
+   SQLE_RC_INVPROTOCOL	   = -1123; (* Invalid protocol type	     *)
+   SQLE_RC_INVRNNAME	   = -1124; (* Invalid remote workstation name   *)
+   SQLE_RC_INVADAPTER	   = -1125; (* Invalid adapter number	     *)
+   SQLE_RC_INVNETID	       = -1126; (* Invalid network id		     *)
+   SQLE_RC_INVPLU	       = -1127; (* Invalid real partner LU name      *)
+
+   SQLE_RC_INVOS_OBJ	   = -1200; (* invalid object specified	     *)
+   SQLE_RC_INVOS_STAT	   = -1201; (* invalid status specified	     *)
+   SQLE_RC_INVOS_NOSTAT	   = -1202; (* status has not been collected     *)
+   SQLE_RC_INVOS_NOUSER	   = -1203; (* no users connected to database    *)
+   SQLE_RC_UNSUPP_CODEPG   = -1204; (* active codepage is not supported  *)
+   SQLE_RC_NOUEXIT	       = -1267; (* SQLUEXIT file not found	     *)
+
+   SQLE_RC_FILEDCS	       = -1310; (* DCS Directory file access error   *)
+   SQLE_RC_DCSDIR_NF	   = -1311; (* DCS Directory not found	     *)
+   SQLE_RC_NO_ENTRY	       = -1312; (* DCS Directory is empty	     *)
+   SQLE_RC_MAX_ENTRY	   = -1313; (* DCS Directory is full	     *)
+   SQLE_RC_INVENTRY_PTR	   = -1314; (* Entry parameter pointer invalid   *)
+   SQLE_RC_INVLDB	       = -1315; (* LDB name has invalid chars	     *)
+   SQLE_RC_LDB_NF	       = -1316; (* DCS Directory entry not found     *)
+   SQLE_RC_DUPLDB	       = -1317; (* DCS Directory duplicate entry     *)
+   SQLE_RC_INVLENGTH	   = -1318; (* Invalid element length	     *)
+   SQLE_RC_ENTRYNOT_COL	   = -1319; (* Entries have not been collected   *)
+   SQLE_RC_GDBUSY	       = -1320; (* Cannot access DCS Dir at this time*)
+   SQLE_RC_INVSTRUCT_ID	   = -1321; (* Invalid structure ID 	     *)
+   SQLE_RC_DRDANSP	       = -1325; (* Remote function not supported     *)
+
+
+END SQLEnv.

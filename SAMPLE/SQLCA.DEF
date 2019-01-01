@@ -1,0 +1,49 @@
+DEFINITION MODULE SQLCA;
+(*# call(o_a_size => off,
+         o_a_copy=>off,
+         result_optional=>on,
+         reg_saved => (si, di, ds, st1, st2),
+         reg_param => (),
+         seg_name => none,
+         near_call => off,
+         ds_eq_ss => off) *)
+(*# module(implementation=>off, init_code => off) *)
+(*# name(prefix => os2_lib) *)
+(*# data(near_ptr => off,var_enum_size=>off) *)
+(*# check(index=>off,range=>off,overflow=>off,nil_ptr=>off) *)
+
+(******************************************************************************
+
+   Module Name	  = SQLCA.H					     12/10/91
+
+   Descriptive Name = SQLCA External Include File
+
+   Copyright = nnnnnnnn (C) Copyright IBM Corp. 1987, 1988, 1989, 1990
+	       Licensed Material - Program Property of IBM
+	       Refer to Copyright Instructions Form Number G120-3083
+
+   Function = Include File defining
+		SQLCA - SQL Communications Area
+
+   Operating System = OS/2 Extended Edition
+
+******************************************************************************)
+
+
+(* SQL Communication Area - SQLCA *)
+
+TYPE
+
+ sqlca = RECORD
+   sqlcaid : ARRAY[1..8] OF CHAR;		(* Eyecatcher = 'SQLCA   ' *)
+   sqlcabc : LONGINT;		(* SQLCA size in bytes = 136 *)
+   sqlcode : LONGINT;		(* SQL return code *)
+   sqlerrml: CARDINAL;		(* Length for SQLERRMC *)
+   sqlerrmc: ARRAY[1..70] OF CHAR; 	(* Error message tokens *)
+   sqlerrp : ARRAY[1..8] OF CHAR;		(* Diagnostic information *)
+   sqlerrd : ARRAY[1..6] OF LONGINT;		(* Diagnostic information *)
+   sqlwarn : ARRAY[1..11] OF CHAR;		(* Warning flags *)
+   sqlstate: ARRAY[1..5] OF CHAR;		(* State corresponding to SQLCODE *)
+ END;
+
+END SQLCA.

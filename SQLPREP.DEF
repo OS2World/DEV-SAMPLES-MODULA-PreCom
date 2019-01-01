@@ -1,0 +1,558 @@
+DEFINITION MODULE SQLPREP;
+
+(*# call(o_a_size => off,
+         o_a_copy=>off,
+         result_optional=>on,
+         reg_saved => (si, di, ds, st1, st2),
+         reg_param => (),
+         seg_name => none,
+         near_call => off,
+         ds_eq_ss => off) *)
+(*# name (prefix => none) *)
+(*# module(implementation=>off, init_code => off) *)
+(*# data(near_ptr => off,var_enum_size=>off) *)
+(*# check(index=>off,range=>off,overflow=>off,nil_ptr=>off) *)
+
+(****************************************************************************
+
+   Module Name	  = SQLAPREP.H					     12/10/91
+
+   Descriptive Name = External Include file for Precompiler Services
+
+   Copyright = nnnnnnnn (C) Copyright IBM Corp. 1988, 1989, 1990
+	       Licensed Material - Program Property of IBM
+	       Refer to Copyright Instructions Form Number G120-3083
+
+   Function = Include File defining
+		Global equates and structures
+		Precompiler and Runtime Command Interfaces
+
+   Operating System = OS/2 Extended Edition
+
+****************************************************************************)
+
+FROM SQLCA IMPORT sqlca;
+FROM SQLDA IMPORT sqlda,sqldaPtr;
+IMPORT SQL;
+IMPORT SQLCodes;
+
+(*
+** Macro used to calculate size of a precompiler option array, an input
+** parameter of SQLAINIT.
+*)
+
+(*  #define SQLA_NUM_OPTIONS(n) (sizeof(struct sqla_options_header) + \
+			     (n)*sizeof(struct sqla_option)	  *)
+(*
+** Values used for option[n].type, an input parameter of SQLAINIT.
+*)
+
+
+CONST
+
+ SQLA_FORMAT	    = SQL.SQL_FRMT_OPT;  (* Option: date/time format	   *)
+ SQLA_ACCESS_PLAN   = 2;		   (* Option: access plan creation *)
+ SQLA_BIND_FILE	    = 3;		   (* Option: bind file creation   *)
+ SQLA_ISOLATION	    = SQL.SQL_ISO_OPT;   (* Option: isolation level	   *)
+ SQLA_BLOCK	        = SQL.SQL_BLOCK_OPT; (* Option: record blocking	   *)
+ SQLA_STDS_LEVEL    =  7;		   (* Option: standards compliance *)
+
+(*
+** Values used for option[n].val when option[n].type is SQLA_FORMAT in
+** the Precompiler Option Array.
+*)
+
+
+ SQLA_POA_DEF	 =    0; (* Default date/time format *)
+ SQLA_POA_USA	 =    1; (* USA date/time format *)
+ SQLA_POA_EUR	 =    2; (* European date/time format *)
+ SQLA_POA_ISO	 =    3; (* International date/time format *)
+ SQLA_POA_JIS	 =    4; (* Japanese date/time format *)
+ SQLA_POA_LOC	 =    5; (* Local date/time format *)
+
+(*
+** Values used for option[n].val when option[n].type is SQLA_ACCESS_PLAN in
+** the Precompiler Option Array.
+*)
+
+ SQLA_CREATE_PLAN   =  1; (* Create an access plan *)
+ SQLA_NO_PLAN	    =  0; (* Do not create an access plan *)
+
+(*
+** Values used for option[n].val when option[n].type is SQLA_BIND_FILE in
+** the Precompiler Option Array.
+*)
+
+ SQLA_CREATE_BIND_FILE = 1; (* Create a bind file *)
+ SQLA_NO_BIND_FILE     = 0; (* Do not create a bind file *)
+
+(*
+** Values used for option[n].val when option[n].type is SQLA_ISOLATION in
+** the Precompiler Option Array.
+*)
+
+ SQLA_REPEATABLE_READ  = SQL.SQL_REP_READ;    (* RR isolation level *)
+ SQLA_CURSOR_STABILITY = SQL.SQL_CURSOR_STAB; (* CS Isolation level *)
+ SQLA_UNCOMMITTED_READ = SQL.SQL_UNCOM_READ;  (* UR Isolation level *)
+
+(*
+** Values used for option[n].val when option[n].type is SQLA_BLOCK in
+** the Precompiler Option Array.
+*)
+
+ SQLA_BLOCK_UNAMBIG =  SQL.SQL_BL_UNAMBIG;
+ SQLA_BLOCK_ALL	    =  SQL.SQL_BL_ALL;
+ SQLA_NO_BLOCK	    =  SQL.SQL_NO_BL;
+
+(*
+** Values used for option[n].val when option[n].type is SQLA_STDS_LEVEL in
+** the Precompiler Option Array.
+*)
+
+ SQLA_STND_NONE	   =  0; (* No compliance required   *)
+ SQLA_STND_MIA	   =  1; (* Comply with MIA standard *)
+
+(*
+** Values used for location, an input parameter of SQLAAHVR.
+*)
+
+ SQLA_DECLARE_SECT = 0; (* Add host var found in a declare section *)
+ SQLA_SQL_STMT	   = 1; (* Add host var found in an SQL statement  *)
+
+(*
+** Values assigned to task[n].func, an output parameter of SQLACMPL.
+*)
+
+ SQLA_START	        = 0; (* Generate a call to sqlastrt *)
+ SQLA_DECLARE	    = 1; (* Begin or end parsing hvar declarations *)
+ SQLA_INCLUDE	    = 2; (* Generate code for an SQLCA or SQLDA *)
+ SQLA_ALLOC_INPUT   = 3; (* Allocate an input SQLDA using SQLAALOC *)
+ SQLA_ALLOC_OUTPUT  = 4; (* Allocate an output SQLDA using SQLAALOC *)
+ SQLA_SETS	        = 5; (* Register a host variable using SQLASETS *)
+ SQLA_USDA_INPUT    = 6; (* Register an input user-defined SQLDA *)
+ SQLA_USDA_OUTPUT   = 7; (* Register an output user-defined SQLDA *)
+ SQLA_CALL	        = 8; (* Generate a call to SQLACALL *)
+ SQLA_DEALLOC	    = 9; (* Generate a call to SQLADLOC *)
+ SQLA_STOP	        = 10; (* Generate a call to SQLASTOP *)
+ SQLA_SQLERROR	    = 11; (* Generate code for WHENEVER SQLERROR *)
+ SQLA_SQLWARNING    = 12; (* Generate code for WHENEVER SQLWARNING *)
+ SQLA_NOT_FOUND	    = 13; (* Generate code for WHENEVER NOT_FOUND *)
+
+(*
+** Values returned in task[n].val when task[n].func is SQLA_DECLARE.
+** This is an output parameter of SQLACMPL.
+*)
+
+ SQLA_BEGIN	   =  0;
+ SQLA_END	   =  1;
+
+(*
+** Values returned in task[n].val when task[n].func is SQLA_INCLUDE.
+** This is an output parameter of SQLACMPL.
+*)
+
+ SQLA_SQLCA	   = 10;
+ SQLA_SQLDA	   = 11;
+
+(*
+** Values returned in task[n].val when task[n].func is SQLA_CALL.
+** This is an output parameter of SQLACMPL.
+*)
+
+ SQLA_CLOSE	      =  20;
+ SQLA_COMMIT	  =  21;
+ SQLA_DESCRIBE	  =  22;
+ SQLA_EXECIMMD	  =  23;
+ SQLA_EXECUTE	  =  24;
+ SQLA_FETCH	      =  25;
+ SQLA_OPEN	      =  26;
+ SQLA_PREPARE	  =  27;
+ SQLA_ROLLBACK	  =  28;
+
+(*
+** Values assigned to token[n].use, an output parameter of SQLACMPL.
+*)
+
+ SQLA_INPUT_HVAR      = 0; (* Input host var, no indicator var *)
+ SQLA_INPUT_WITH_IND  = 1; (* Input host var followed by indicator var *)
+ SQLA_OUTPUT_HVAR     = 2; (* Output host var, no indicator var *)
+ SQLA_OUTPUT_WITH_IND = 3; (* Output host var followed by indicator var*)
+ SQLA_INDICATOR	      = 4; (* Indicator variable *)
+ SQLA_USER_SQLDA      = 5; (* SQLDA structure *)
+ SQLA_INVALID_USE     = 6; (* Host variable type does not match use *)
+ SQLA_INVALID_ID      = 7; (* Host variable token ID is not valid *)
+
+(*
+** Values assigned to stmt_type, an output parameter of SQLACMPL.
+*)
+
+ SQLA_TYPE_BEGIN 	       = 0;
+ SQLA_TYPE_CLOSE 	       = 10;
+ SQLA_TYPE_COMMIT	       = 20;
+ SQLA_TYPE_DECLARE_SELECT  = 30;
+ SQLA_TYPE_DECLARE_SNAME   = 40;
+ SQLA_TYPE_DESCRIBE	       = 50;
+ SQLA_TYPE_END		       = 60;
+ SQLA_TYPE_EXECUTE	       = 70;
+ SQLA_TYPE_EXECUTE_IMM	   = 80;
+ SQLA_TYPE_FETCH 	       = 90;
+ SQLA_TYPE_INCLUDE_SQLCA   = 100;
+ SQLA_TYPE_INCLUDE_SQLDA   = 110;
+ SQLA_TYPE_OPEN		       = 120;
+ SQLA_TYPE_PREPARE	       = 130;
+ SQLA_TYPE_ROLLBACK	       = 140;
+ SQLA_TYPE_SELECT	       = 150;
+ SQLA_TYPE_SELECT_INTO	   = 160;
+ SQLA_TYPE_WHEN_NOT_FOUND  = 170;
+ SQLA_TYPE_WHEN_SQLERROR   = 180;
+ SQLA_TYPE_WHEN_SQLWARNING = 190;
+ SQLA_TYPE_OTHER 	       = 200;
+
+(*
+** Values used for term_option, an input parameter of SQLAFINI.
+*)
+
+ SQLA_SAVE	     = 1; (* Save the access plan and/or bind file *)
+ SQLA_DISCARD	 = 0; (* Discard the access plan and/or bind file *)
+
+(*
+** Miscellaneous Constants
+*)
+
+ SQL_MAX_FILE_NAME_LENGTH   = 128; (* size of SQLAINIT file name buffer *)
+ SQL_CMPL_BUFSIZ 	        = 128; (* size of SQLACMPL output buffers *)
+ SQL_PID_LENGTH		        = 40; (* length of precompiler pid *)
+
+(*
+** Return codes from Precompiler Services and Runtime Services functions.
+*)
+
+ SQLA_SQLCA_BAD	    = -1; (* sqlca pointer/length invalid *)
+ SQLA_CHECK_SQLCA   =  0; (* check sqlca completion status *)
+
+(*
+** Values returned in sqlca.sqlcode by Precompiler or Runtime Services
+*)
+
+ SQLA_RC_OK			           =  SQLCodes.SQL_RC_OK;
+
+ SQLA_RC_CHAR_BAD		       =  SQLCodes.SQL_RC_E007;
+ SQLA_RC_STRING_NOT_TERMINATED =  SQLCodes.SQL_RC_E010;
+ SQLA_RC_BFILE_OPEN_ERROR      =  -31;
+ SQLA_RC_BFILE_DISK_ERROR      =  -32;
+ SQLA_RC_SECTION_LIMIT	       =  -51;
+ SQLA_RC_MEMORY_BAD	           =   -83;
+ SQLA_RC_SNAME_DUP	           =   -85;
+ SQLA_RC_STMT_LIMIT		       =   SQLCodes.SQL_RC_E101;
+ SQLA_RC_NUMBER_BAD		       =   SQLCodes.SQL_RC_E103;
+ SQLA_RC_STMT_SYNTAX_BAD 	   =   SQLCodes.SQL_RC_E104;
+ SQLA_RC_GSTRING_BAD		   =   SQLCodes.SQL_RC_E105;	      (* DBCS only *)
+ SQLA_RC_IDENTIFIER_LIMIT	   =   SQLCodes.SQL_RC_E107;
+ SQLA_RC_QUALIFIER_BAD		   =   SQLCodes.SQL_RC_E108;
+ SQLA_RC_DDSBAD			       =   SQLCodes.SQL_RC_E142;
+ SQLA_RC_DDSIGN			       =   SQLCodes.SQL_RC_W143;
+ SQLA_RC_DDSWRN			       =   SQLCodes.SQL_RC_W143;
+ SQLA_RC_KEYWORD_BAD		   =   SQLCodes.SQL_RC_E199;
+ SQLA_RC_HVAR_NOT_DEC	       =   -306;
+ SQLA_RC_HVAR_DUP_NAME	       =   -307;
+ SQLA_RC_HVAR_LIMIT	           =   -308;
+ SQLA_RC_STMT_HVAR_LIMIT       =   -310;
+ SQLA_RC_HVAR_USE_BAD	       =   -324;
+ SQLA_RC_CURSOR_DUP	           =   -505;
+ SQLA_RC_STMT_MODIFY_ALL       =   513;
+ SQLA_RC_DISK_FULL		       =   SQLCodes.SQL_RC_E968;
+ SQLA_RC_FATAL_ERROR	       =   -4901;
+ SQLA_RC_PARM_CHARS_BAD	       =   -4902;
+ SQLA_RC_PARM_LENGTH_BAD 	   =   SQL.SQLA_RC_OPTION_LEN_BAD;
+ SQLA_RC_PARM_POINTER_BAD	   =   SQL.SQLA_RC_OPTION_PTR_BAD;
+ SQLA_RC_PARM_RANGE_BAD		   =   SQL.SQLA_RC_OPTION_SIZE_BAD;
+ SQLA_RC_HVAR_SQLTYPE_BAD      =   -4911;
+ SQLA_RC_HVAR_SQLLEN_BAD       =   -4912;
+ SQLA_RC_HVAR_TOKEN_ID_DUP     =   -4913;
+ SQLA_RC_HVAR_TOKEN_ID_BAD     =   -4914;
+ SQLA_RC_INIT_DUP	           =   -4915;
+ SQLA_RC_INIT_REQUIRED	       =   -4916;
+ SQLA_RC_OPTION_BAD		       =   SQL.SQLA_RC_OPTION_DATA_BAD;
+ SQLA_RC_TERM_OPTION_BAD       =   -4918;
+ SQLA_RC_TASK_ARRAY_LIMIT      =   -4919;
+ SQLA_RC_STMT_CLAUSE_BAD       =   -4940; (* Prep version of -109 *)
+ SQLA_RC_STMT_BLANK	           =   -4941; (* Prep version of -198 *)
+ SQLA_RC_SELECT_HVAR_TYPE_BAD  =   -4942; (* Prep version of -303 *)
+ SQLA_RC_SELECT_LIST_BAD       =    4943; (* Prep version of -313 *)
+ SQLA_RC_COLUMN_NOT_NULLABLE   =   -4944; (* Prep version of -407 *)
+ SQLA_RC_STMT_MARKER_BAD       =   -4945; (* Prep version of -418 *)
+ SQLA_RC_CURSOR_NOT_DECLARED   =   -4946; (* Prep version of -504 *)
+ SQLA_RC_SQLDA_ID_BAD	       =   -4951;
+ SQLA_RC_SQLVAR_INDEX_BAD      =   -4952;
+ SQLA_RC_CALL_TYPE_BAD	       =   -4953;
+ SQLA_RC_SECTION_BAD	       =   -4954;
+
+(*
+** Temporary value used in sqlca.sqlcode after an SQLAALOC function.  Runtime
+** code can check sqlca.sqlcode to determine whether or not the SQLASETV
+** function needs to be called to initialize the sqlda sqlvar elements.
+*)
+
+ SQLA_RC_SQLVARS_SET	      = 4959; (* sqlvars already initialized *)
+
+(*
+** Errors that cause Precompiler Services to enter the fatal error state.
+** After encountering one of these types of errors, Precompiler Services
+** requires an SQLAFINI and SQLAINIT call before it will continue.
+*)
+
+ SQLA_RC_INV_INSERT		  =  SQLCodes.SQL_RC_E803;
+ SQLA_RC_INV_SQLDA_ADR	  =	 SQLCodes.SQL_RC_E822;
+ SQLA_RC_SYS_ERROR		  =  SQLCodes.SQL_RC_E902;
+ SQLA_RC_DEADLOCK_ERR	  =	 SQLCodes.SQL_RC_E911;
+ SQLA_RC_FAT_SYS_ERR	  =	 SQLCodes.SQL_RC_E912;
+ SQLA_RC_TOO_MANY_LKS	  =	 SQLCodes.SQL_RC_E930;
+ SQLA_RC_STORAGE_ERR	  =	 SQLCodes.SQL_RC_E954;
+ SQLA_RC_DB_HEAP_ERR	  =	 SQLCodes.SQL_RC_E956;
+ SQLA_RC_TOOMANY_OFLS	  =	 SQLCodes.SQL_RC_E958;
+ SQLA_RC_TOOMANY_FILES	  =	 SQLCodes.SQL_RC_E960;
+ SQLA_RC_LOG_FULL		  =  SQLCodes.SQL_RC_E964;
+ SQLA_RC_FILE_SYS_FULL	  =	 SQLCodes.SQL_RC_E968;
+ SQLA_RC_READ_ONLY_FIL	  =	 SQLCodes.SQL_RC_E970;
+ SQLA_RC_INCORRECT_DSK	  =	 SQLCodes.SQL_RC_E972;
+ SQLA_RC_DB_DRV_LOCKED	  =	 SQLCodes.SQL_RC_E974;
+ SQLA_RC_DRV_DOOR_OPEN	  =	 SQLCodes.SQL_RC_E976;
+ SQLA_RC_DISK_WRT_PRO	  =	 SQLCodes.SQL_RC_E978;
+ SQLA_RC_DISK_ERROR		  =  SQLCodes.SQL_RC_E980;
+ SQLA_RC_DISK_ERR		  =  SQLCodes.SQL_RC_E982;
+ SQLA_RC_COMM_RB_ERR	  =	 SQLCodes.SQL_RC_E984;
+ SQLA_RC_CAT_FILE_ERR	  =	 SQLCodes.SQL_RC_E985;
+ SQLA_RC_TAB_FILE_ERR	  =	 SQLCodes.SQL_RC_E986;
+ SQLA_RC_INDEX_ERR		  =  SQLCodes.SQL_RC_E990;
+ SQLA_RC_REL_NUM_BAD	  =	 SQLCodes.SQL_RC_E992;
+ SQLA_RC_CTRL_BREAK	      =  -4994; (* Prep version of -952 *)
+ SQLA_RC_CODEPAGE_BAD	  =  -4995; (* Country info not found *)
+ SQLA_RC_SQLUSER_BAD	  =  -4997; (* Prep version of -1046 *)
+ SQLA_RC_DB_DISCONNECTED  =  -4998; (* Prep version of -1049 *)
+ SQLA_RC_INTERNAL_ERR	  =  -4999; (* Precompiler Services err *)
+
+(*********************** Precompiler Services Structures *******************)
+
+(*
+** Precompiler Option Array.  Used with SQLAINIT.
+*)
+
+CONST
+  MaxTokens = 200;
+  MaxTasks  = 40;
+  MaxOption = 30;
+
+TYPE
+
+ sqla_optionRec = RECORD
+   type : LONGCARD;
+   value: LONGCARD;
+ END;
+
+ sqla_header = RECORD
+    allocated : LONGCARD;
+    used      : LONGCARD;
+ END;
+
+ sqla_options = RECORD
+   Header    : sqla_header;
+   Option    : ARRAY[1..MaxOption] OF sqla_optionRec;
+ END;
+
+
+(*
+** Program ID.	Used by Precompiler Services and Runtime Services
+*)
+
+sqla_program_id = RECORD
+  length : CARDINAL;
+  rp_rel_num : CARDINAL;
+  db_rel_num : CARDINAL;
+  bf_rel_num : CARDINAL;
+  sqluser    : ARRAY[0..7] OF CHAR;
+  planname   : ARRAY[0..7] OF CHAR;
+  contoken   : ARRAY[0..7] OF CHAR;
+  buffer     : ARRAY[0..7] OF CHAR;
+END;
+
+
+(*
+** Precompiler Task Array.  Used with SQLACMPL.
+*)
+
+sqla_task = RECORD
+  func : LONGCARD;
+  value: LONGCARD;
+END;
+
+sqla_tasks = RECORD
+  Header   : sqla_header;
+  tasks    : ARRAY[1..MaxTasks] OF sqla_task;
+END;
+
+
+
+(*
+** Precompiler Token ID Array.	Used with SQLACMPL
+*)
+sqla_token = RECORD
+  tokenID : LONGCARD;
+  use     : LONGCARD;
+END;
+
+sqla_tokens = RECORD
+  Header    : sqla_header;
+  Tokens    : ARRAY[1..MaxTokens] OF sqla_token;
+END;
+
+
+(***************** Precompiler Services Prototypes *************************)
+
+
+		(* ADD A HOST VARIABLE DECLARATION *)
+PROCEDURE sqlaahvr (VAR NameLen : CARDINAL;	(* host variable name length *)
+		            VAR Name    : ARRAY OF CHAR;	(* host variable name *)
+		            VAR SQLType : CARDINAL; (* host variable SQL data type *)
+		            VAR HVNameLn: CARDINAL;(* host variable length *)
+		            VAR TokenID : CARDINAL; (* host variable token id *)
+		            VAR Location: CARDINAL; (* host variable location *)
+		                Spare   : ADDRESS;  (* reserved *)
+		            VAR SqlCA   : sqlca): CARDINAL;    (* SQLCA *)
+
+			(* COMPILE AN SQL STATEMENT *)
+TYPE
+  buf128 = ARRAY[0..127] OF CHAR;
+  			
+PROCEDURE sqlacmpl	  (VAR TxtLen  : CARDINAL;(* SQL statement text length *)
+		               VAR Sqltxt  : ARRAY OF CHAR;(* SQL statement text *)
+		               VAR LineNbr : CARDINAL;(* source line number *)
+		               VAR TskArray: sqla_tasks;(* task array *)
+		               VAR TokenAry: sqla_tokens;(* token id array *)
+		               VAR Section : CARDINAL;(* section number *)
+		               VAR SqlType : CARDINAL;(* type of SQL statement *)
+		               VAR Str1    : buf128;(* 128 byte string buffer 1 *)
+                       VAR Str2    : buf128;(* 128 byte string buffer 2 *)
+		               VAR Str3    : buf128;(* 128 byte string buffer 3 *)
+		                   Spare   : ADDRESS;(* reserved *)
+		               VAR SqlCA   : sqlca ):CARDINAL;	(* SQLCA *)
+
+
+PROCEDURE sqlafini	  (VAR Action : CARDINAL; (* save/discard plan/bind file *)
+		               Spare  : ADDRESS;		(* reserved *)
+		               VAR SqlCA  : sqlca ): CARDINAL;	(* SQLCA *)
+
+
+
+PROCEDURE sqlainit	  (VAR ProgNmLen : CARDINAL;(* program name length *)
+		               VAR ProgNm    : ARRAY OF CHAR;	(* program name *)
+		               VAR DBNmLen   : CARDINAL;(* database name length *)
+		               VAR DBNm      : ARRAY OF CHAR;(* database name *)
+		               VAR PWLen     : CARDINAL;(* password length *)
+		               VAR PassWd    : ARRAY OF CHAR;(* database password *)
+		               VAR BndFileNmL: CARDINAL;(* bind file name length *)
+		               VAR BndFileNm : ARRAY OF CHAR;(* bind file name *)
+		               VAR Options   : sqla_options;(* precompiler option array *)
+		               VAR PrgID     : sqla_program_id;(* precompiler program ID *)
+		                   Spare     : ADDRESS;(* reserved *)
+		               VAR SqlCA     : sqlca ): CARDINAL;	(* SQLCA *)
+
+
+(****************************************************************************)
+(*                     SQLGxxxx                                             *)
+(****************************************************************************)
+
+
+		(* ADD A HOST VARIABLE DECLARATION *)
+PROCEDURE SQLGAHVR (VAR NameLen : CARDINAL;	(* host variable name length *)
+		            VAR Name    : ARRAY OF CHAR;	(* host variable name *)
+		            VAR SQLType : CARDINAL; (* host variable SQL data type *)
+		            VAR HVLen   : CARDINAL;(* host variable length *)
+		            VAR TokenID : LONGCARD; (* host variable token id *)
+		            VAR Location: CARDINAL; (* host variable location *)
+		                Spare   : ADDRESS;  (* reserved *)
+		            VAR SqlCA   : sqlca): CARDINAL;    (* SQLCA *)
+
+			(* COMPILE AN SQL STATEMENT *)
+  			
+PROCEDURE SQLGCMPL    (VAR TxtLen  : CARDINAL;(* SQL statement text length *)
+		               VAR Sqltxt  : ARRAY OF CHAR;(* SQL statement text *)
+		               VAR LineNbr : CARDINAL;(* source line number *)
+		               VAR TskArray: sqla_tasks;(* task array *)
+		               VAR TokenAry: sqla_tokens;(* token id array *)
+		               VAR Section : CARDINAL;(* section number *)
+		               VAR SqlType : CARDINAL;(* type of SQL statement *)
+		               VAR Str1    : buf128;(* 128 byte string buffer 1 *)
+                       VAR Str2    : buf128;(* 128 byte string buffer 2 *)
+		               VAR Str3    : buf128;(* 128 byte string buffer 3 *)
+		                   Spare   : ADDRESS;(* reserved *)
+		               VAR SqlCA   : sqlca ):CARDINAL;	(* SQLCA *)
+
+
+PROCEDURE SQLGFINI	  (VAR Action : CARDINAL; (* save/discard plan/bind file *)
+		               Spare  : ADDRESS;		(* reserved *)
+		               VAR SqlCA  : sqlca ): CARDINAL;	(* SQLCA *)
+
+
+
+PROCEDURE SQLGINIT    (VAR ProgNmLen : CARDINAL;(* program name length *)
+		               VAR ProgNm    : ARRAY OF CHAR;	(* program name *)
+		               VAR DBNmLen   : CARDINAL;(* database name length *)
+		               VAR DBNm      : ARRAY OF CHAR;(* database name *)
+		               VAR PWLen     : CARDINAL;(* password length *)
+		               VAR PassWd    : ARRAY OF CHAR;(* database password *)
+		               VAR BndFileNmL: CARDINAL;(* bind file name length *)
+		               VAR BndFileNm : ARRAY OF CHAR;(* bind file name *)
+		               VAR Options   : sqla_options;(* precompiler option array *)
+		               VAR PrgID     : sqla_program_id;(* precompiler program ID *)
+		                   Spare     : ADDRESS;(* reserved *)
+		               VAR SqlCA     : sqlca ): CARDINAL;	(* SQLCA *)
+
+
+
+
+
+
+(******************* Begin Runtime Services  prototypes : *********************)
+
+
+
+
+PROCEDURE SQLAALOC ( SQLID : CARDINAL;	(* sqlda identification number*)
+		             Elmts : CARDINAL;	(* number of sqlvar elements needed*)
+		             StmID : CARDINAL;   (* statement identification number*)
+		             Spare : ADDRESS): CARDINAL; (* reserved*)
+
+PROCEDURE SQLACALL ( CallType  : CARDINAL;(* function call type*)
+		             AccPlan   : CARDINAL;(* access plan section*)
+		             InputSqlDA: CARDINAL;(* input SQLDA ID *)
+		             OutSqlDA  : CARDINAL;(* output SQLDA ID *)
+		             Spare     : ADDRESS):CARDINAL;		(* reserved *)
+
+PROCEDURE SQLADLOC ( SqlDA : CARDINAL; (*SQLDA ID *)
+		             Spare : ADDRESS): CARDINAL; (* reserved*)
+
+PROCEDURE SQLASETS (SQLTxtLen : CARDINAL;(* SQL statement text length *)
+		            VAR SQLTxt    : ARRAY OF CHAR; (*-- SQL statement text*)
+		            Spare         : ADDRESS):CARDINAL;(*-- reserved*)
+
+PROCEDURE SQLASETV (SqlDA : CARDINAL;	(*-- SQLDA ID*)
+		            SqlVar: CARDINAL;	(* sqlvar element*)
+		            type  : CARDINAL;   (* SQL data type*)
+		            Len   : CARDINAL;(* declared length*)
+		            HostAdr: ADDRESS;	(* address of host var*)
+		            IndVar : ADDRESS;	(* address of indicator var*)
+		            spare  : ADDRESS):CARDINAL;		(* reserved*)
+
+PROCEDURE SQLASTOP(Spare : ADDRESS): CARDINAL;		(* reserved*)
+
+PROCEDURE SQLASTRT(    RunID : ADDRESS; (* runtime program ID*)
+		               Spare : ADDRESS;		(* reserved*)
+		               VAR SqlCA : sqlca):CARDINAL;		
+
+PROCEDURE SQLAUSDA(SqlDAID : CARDINAL;	(* SQLDA id*)
+		           SqlDA : sqldaPtr;	(* SQLDA pointer*)
+		           spare : ADDRESS): CARDINAL;		(* reserved*)
+
+(** end Runtime Services prototypes *****************************************)
+
+END SQLPREP.

@@ -1,0 +1,43 @@
+DEFINITION MODULE SAM;
+(* sample data manager application *)
+
+IMPORT OS2DEF,Win,Lib,SYSTEM;
+
+FROM OS2DEF IMPORT HDC,HRGN,HAB,HPS,HBITMAP,HWND,HMODULE,HSEM,
+                   POINTL,RECTL,PID,TID,LSET,NULL,
+                   COLOR,NullVar,NullStr,BOOL ;
+
+(* these constanst are the same as the ones used in the resource file *)
+
+CONST
+    OrgLst                   =   100;
+    OrgUnitLst               =   101;
+    OrgUnitDetail            =   200;
+    EmplyeeLst               =   206;
+    Division                 =   214;
+    Department               =   215;
+    Location                 =   216;
+    DeptNbr                  =   217;
+    Manager                  =   218;
+    Avg                      =   219;
+    Total                    =   220;
+    Min                      =   221;
+    Max                      =   222;
+    EmplyDetail              =   300; (* dialog for employee detail *)
+    Name                     =   308;
+    Dept                     =   309;
+    Job                      =   310;
+    Years                    =   311;
+    Salary                   =   312;
+    Commis                   =   313;
+
+(*# save,
+    call(near_call=>off, reg_param=>(), reg_saved=>(di,si,ds,es,st1,st2)) *)
+PROCEDURE SampleMessageProc(hwnd : HWND;msg:CARDINAL;mp1,mp2:Win.MPARAM):Win.MRESULT;
+PROCEDURE OrgUnitDlgProc   (hwnd : HWND;msg:CARDINAL;mp1,mp2:Win.MPARAM):Win.MRESULT;
+PROCEDURE StaffDlgProc     (hwnd : HWND;msg:CARDINAL;mp1,mp2:Win.MPARAM):Win.MRESULT;
+(*# restore *)
+
+
+
+END SAM.

@@ -1,0 +1,12 @@
+#system os2 exe
+#model dynalink jpi
+#pragma check(index=>on,range=>on,stack=>on,nil_ptr=>on,overflow=>on,guard=>on)
+#pragma optimize(speed=>off,cse=>off,const=>off,peep_hole=>off,jump=>off,loop=>off,alias=>off,regass=>off,stk_frame=>off,cpu=>486,copro=>387)
+#pragma debug(vid=>full)
+#pragma link(sql_dyn.lib,dsqci.lib)
+#run "testsql prjname sample /B /K /I /O"
+
+#compile %main
+#link %prjname
+
+

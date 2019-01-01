@@ -1,0 +1,29 @@
+#system os2 exe
+#model dynalink jpi
+#pragma check(index=>on,range=>on,stack=>on,nil_ptr=>on,overflow=>on,guard=>on)
+#pragma optimize(cpu=>486,copro=>387)
+#pragma debug(vid=>full)
+
+#set pm_api="on"
+#if sample.def #older sample.sqd
+  #then
+    #run "testsql sample sample /b"
+  #endif
+#if sample.mod #older sample.sqm
+  #then
+    #run "testsql sample sample /b"
+  #endif
+#compile test.mod
+#pragma link(sql_dyn.lib)
+#link %prjname
+#if #exists %prjname.exe #then
+	#if %prjname.rc #older %prjname.res #then
+		#run "vidrc %prjname.res"
+	#else
+		#run "vidrc %prjname"
+	#endif
+#endif
+
+
+
+

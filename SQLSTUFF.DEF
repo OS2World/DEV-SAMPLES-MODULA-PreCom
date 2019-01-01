@@ -1,0 +1,21 @@
+DEFINITION MODULE SQLStuff;
+FROM SQLDA IMPORT sqlda,sqldaPtr;
+FROM SQLCA IMPORT sqlca;
+
+
+TYPE
+  SQLErrorRoutine = PROCEDURE(CARDINAL,     (* output file handle *)
+                              ARRAY OF CHAR,  (* msg to prepend*)
+                              sqlca); (* file handle & error number *)
+
+
+
+VAR
+  SQLErrorHandler : SQLErrorRoutine;   (* default error handler*)
+
+PROCEDURE AllocSQLDA( VAR TheDA : sqldaPtr; NbrVars : CARDINAL);
+PROCEDURE DeallocSQLDA(VAR TheDA : sqldaPtr);
+PROCEDURE DefaultErrorRoutine( Handle : CARDINAL; Msg : ARRAY OF CHAR;
+                               CA : sqlca);
+
+END SQLStuff.

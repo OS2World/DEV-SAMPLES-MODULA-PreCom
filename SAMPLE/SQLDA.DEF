@@ -1,0 +1,64 @@
+
+DEFINITION MODULE SQLDA;
+(*# call(o_a_size => off,
+         o_a_copy=>off,
+         result_optional=>on,
+         reg_saved => (si, di, ds, st1, st2),
+         reg_param => (),
+         seg_name => none,
+         near_call => off,
+         ds_eq_ss => off) *)
+(*# module(implementation=>off, init_code => off) *)
+(*# name(prefix => os2_lib) *)
+(*# data(near_ptr => off,var_enum_size=>off) *)
+(*# check(index=>off,range=>off,overflow=>off,nil_ptr=>off) *)
+(****************************************************************************
+
+   Module Name	  = SQLDA.H					     12/10/91
+
+   Descriptive Name = SQLDA External Include File
+
+   Copyright = nnnnnnnn (C) Copyright IBM Corp. 1987
+	       Licensed Material - Program Property of IBM
+	       Refer to Copyright Instructions Form Number G120-3083
+
+   Function = Include File defining SQLDA
+
+   Operating System = OS/2 Extended Edition
+
+****************************************************************************)
+
+
+(* SQLDA: SQL Descriptor Area - Variable descriptor			   *)
+(* this structure can not be allocated using NEW because of the *)
+(* variable number of data elements *)
+
+
+TYPE
+  SQLVar = RECORD
+    type   : CARDINAL; (* sql type of data *)
+    len    : CARDINAL; (* length of data   *)
+    bufaddr: ADDRESS;  (* address of buffer *)
+    NulVar : POINTER TO CARDINAL;
+    namlen : CARDINAL;
+    name   : ARRAY[0..29] OF CHAR;  (* colum name or var name *)
+  END;
+
+  SQLHeader = RECORD
+   sqlaid : ARRAY[0..7] OF CHAR; (* Eye catcher = 'SQLDA   '    *)
+   sqldabc: LONGINT;		     (* SQLDA size in bytes=16+44*SQLN *)
+   sqln   : CARDINAL;  		     (* Number of SQLVAR elements alloc *)
+   sqld   : CARDINAL;            (* # of used SQLVAR elements	   *)
+  END;
+ MaxVars = [0..10];
+
+ sqldaPtr = POINTER TO sqlda;
+
+ sqlda = RECORD
+   header : SQLHeader;
+   vars   : ARRAY MaxVars OF SQLVar; (* this gets allocated as an array variables *)
+
+END;
+
+(*  SQLDASIZE(n) (sizeof(struct sqlda) + (n-1)*sizeof(struct sqlvar)) *)
+END SQLDA.

@@ -1,0 +1,74 @@
+DEFINITION MODULE LstBox;
+FROM Lists IMPORT GenList,ElmtPntr,Element;
+(*FROM GenLists IMPORT GenList;*)
+FROM OS2DEF IMPORT HWND;
+IMPORT Win;
+
+TYPE
+  DLPnt = POINTER TO DropDownList;
+  LBPnt = POINTER TO ListBox;
+  SEPnt = POINTER TO StrElmt;
+
+CLASS StrElmt (Element);
+  TheStr : ARRAY[0..80] OF CHAR;
+  PROCEDURE Assign(AString : ARRAY OF CHAR);
+  PROCEDURE GetStr(VAR AString : ARRAY OF CHAR);
+END StrElmt;
+
+CLASS DropDownList;
+ ItemList : GenList;
+ init     : CARDINAL;
+ Parent   : HWND;
+ hwnd     : HWND;
+ Id       : CARDINAL;
+ PROCEDURE Initialize(FileName : ARRAY OF CHAR);
+ PROCEDURE SelectFirst();
+ PROCEDURE FillBox(ParentHwnd : HWND; Control : CARDINAL);
+ PROCEDURE ReadBox( VAR Value : ARRAY OF CHAR);
+ PROCEDURE Initialized() : BOOLEAN;
+ PROCEDURE AddScrItem( Str : ARRAY OF CHAR);
+ PROCEDURE DeleteScrItem( ItemNbr : CARDINAL);
+ PROCEDURE GetSelectedAdr(VAR ObjPnt  : ElmtPntr;  (* get address of item *)
+                        VAR ItemNbr : CARDINAL);
+ PROCEDURE GetSelected(VAR Object   : Element;   (* get item *)
+                        VAR ItemNbr : CARDINAL);
+ PROCEDURE GetItemSize(Spot : CARDINAL):CARDINAL;
+ PROCEDURE ClearItemScr();
+ PROCEDURE Dispose();
+ PROCEDURE AddElmt(VAR TheElmt : Element; Size : CARDINAL);
+ PROCEDURE SetSelected(J : CARDINAL);
+
+END DropDownList;
+
+CLASS ListBox(DropDownList);
+
+
+      (* on multi select items - return list of selected *)
+
+  PROCEDURE GetSelectedLst( VAR Lst : ListBox);
+
+      (* Assign the list to the item list *)
+
+  PROCEDURE FillList(VAR TheList : GenList);
+
+     (* user called routine to get a display line from an object *)
+
+
+  VIRTUAL PROCEDURE GetDisplayLine(ObjPnt : ADDRESS; VAR Str : ARRAY OF CHAR);
+
+  PROCEDURE GetItemAdr(VAR ItemPnt : ElmtPntr;ItemNbr : CARDINAL);
+
+  PROCEDURE GetItemCnt() : CARDINAL;
+
+    (* delete an item from the list - no screen update *)
+  PROCEDURE DeleteItem(ItemNbr : CARDINAL);
+
+      (*  delete an item from the screen list *)
+  PROCEDURE DeleteItemScr( ItemNbr : CARDINAL);
+
+  PROCEDURE DeleteScrItem(ItemNbr : CARDINAL; ListAlso : BOOLEAN);
+
+END ListBox;
+
+
+END LstBox.

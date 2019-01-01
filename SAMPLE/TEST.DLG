@@ -1,0 +1,72 @@
+DLGINCLUDE 1 "D:\SQLLIB\SAMPLE.H"
+
+DLGTEMPLATE OrgLst LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Sample IBM Data Manager App using TS MOD2", OrgLst, -78, -64,
+            366, 174, WS_VISIBLE, FCF_SYSMENU | FCF_TITLEBAR
+    BEGIN
+        PUSHBUTTON      "Cancel", DID_CANCEL, 32, 8, 40, 14
+        LISTBOX         OrgUnitLst, 20, 40, 324, 114
+                        PRESPARAMS PP_FONTNAMESIZE, 0x632E3031L, 0x6972756FL,
+                        0x00007265L
+        LTEXT           "List of ORG Units", 102, 32, 158, 76, 8
+        LTEXT           "Double click on org unit for specifics", 103, 76,
+                        28, 158, 8
+    END
+END
+
+DLGTEMPLATE EmplyDetail LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Employee Detail - Sample Mod2 & Datamanager", EmplyDetail, 12,
+            36, 352, 134, WS_VISIBLE, FCF_SYSMENU | FCF_TITLEBAR
+    BEGIN
+        LTEXT           "Name", 301, 48, 100, 26, 8
+        LTEXT           "Dept", 302, 54, 86, 21, 8
+        LTEXT           "Job", 303, 58, 74, 16, 8
+        LTEXT           "Years", 304, 48, 60, 27, 8
+        LTEXT           "Salary", 305, 46, 48, 28, 8
+        LTEXT           "Commission", 306, 20, 34, 55, 8
+        PUSHBUTTON      "Ok", 307, 142, 10, 40, 14
+        ENTRYFIELD      "", Name, 82, 102, 76, 8, ES_MARGIN
+        ENTRYFIELD      "", Dept, 82, 88, 76, 8, ES_MARGIN
+        ENTRYFIELD      "", Job, 82, 74, 76, 8, ES_MARGIN
+        ENTRYFIELD      "", Years, 82, 60, 76, 8, ES_MARGIN
+        ENTRYFIELD      "", Salary, 82, 46, 76, 8, ES_MARGIN
+        ENTRYFIELD      "", Commis, 82, 32, 76, 8, ES_MARGIN
+    END
+END
+
+DLGTEMPLATE OrgUnitDetail LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Org Unit Details", OrgUnitDetail, 8, 14, 358, 166, WS_VISIBLE, 
+            FCF_SYSMENU | FCF_TITLEBAR
+    BEGIN
+        LTEXT           "Division", 201, 22, 152, 36, 8
+        LTEXT           "Department", 202, 8, 142, 51, 8
+        LTEXT           "Location", 203, 20, 130, 38, 8
+        LTEXT           "Manager", 204, 172, 154, 39, 8
+        LTEXT           "Dept Nbr", 205, 20, 120, 39, 8
+        LISTBOX         EmplyeeLst, 16, 60, 322, 50
+                        PRESPARAMS PP_FONTNAMESIZE, 0x632E3031L, 0x6972756FL, 
+                        0x00007265L
+        LTEXT           "Employees", 207, 142, 110, 48, 8
+        LTEXT           "Double click on employee to see details", 208, 88, 
+                        52, 172, 8
+        GROUPBOX        "Salary", 209, 16, 4, 216, 46
+        LTEXT           "Avg", 210, 32, 28, 16, 8
+        LTEXT           "Min", 211, 120, 28, 17, 8
+        LTEXT           "Max", 212, 118, 8, 20, 8
+        LTEXT           "Total", 213, 30, 8, 22, 8
+        ENTRYFIELD      "", Division, 70, 154, 94, 8, ES_MARGIN
+        ENTRYFIELD      "", Department, 70, 142, 94, 8, ES_MARGIN
+        ENTRYFIELD      "", Location, 70, 130, 94, 8, ES_MARGIN
+        ENTRYFIELD      "", DeptNbr, 70, 118, 94, 8, ES_MARGIN
+        ENTRYFIELD      "", Manager, 218, 154, 94, 8, ES_MARGIN
+        ENTRYFIELD      "", Avg, 60, 28, 52, 8, ES_MARGIN
+        ENTRYFIELD      "", Total, 60, 8, 52, 8, ES_MARGIN
+        ENTRYFIELD      "", Min, 148, 28, 52, 8, ES_MARGIN
+        ENTRYFIELD      "", Max, 146, 8, 52, 8, ES_MARGIN
+        PUSHBUTTON      "Ok", DID_CANCEL, 270, 24, 40, 14
+    END
+END
+

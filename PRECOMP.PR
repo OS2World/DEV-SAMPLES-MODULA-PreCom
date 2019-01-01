@@ -1,0 +1,18 @@
+#system os2 exe
+#model dynalink jpi
+#pragma optimize(speed=>off,cse=>off,const=>off,peep_hole=>off,jump=>off,loop=>off,alias=>off,regass=>off,stk_frame=>off,cpu=>486,copro=>387)
+#pragma option(bit_opr=>on)
+#pragma warn(wpnu=>on)
+#pragma debug(vid=>full)
+#pragma define(pmstuff=>off)
+
+
+#compile %prjname
+#pragma link(sql_dyn.lib)
+#link %prjname
+
+
+
+
+
+

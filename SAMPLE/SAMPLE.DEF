@@ -1,0 +1,60 @@
+DEFINITION MODULE Sample;
+
+FROM Lists IMPORT StrElmt,GenList;
+FROM LstBox IMPORT ListBox;
+
+TYPE
+
+(****
+EXEC SQL BEGIN DECLARE SECTION;
+***)
+
+
+CLASS Staff(StrElmt);    (* staff object *)
+  ID : CARDINAL;
+  Name: ARRAY[0..14] OF CHAR;
+  DeptNbr : CARDINAL;
+  Job : ARRAY[0..10] OF CHAR;
+  Years : CARDINAL;
+  Salary: LONGREAL;
+  Comm  : LONGREAL;
+
+  NameNul : CARDINAL;
+  DeptNul : CARDINAL;
+  JobNul  : CARDINAL;
+  YearNul : CARDINAL;
+  SalNul  : CARDINAL;
+  ComNul  : CARDINAL;
+  PROCEDURE MakeDisplayLine();
+
+END Staff;
+
+CLASS Org(StrElmt);   (* Org unit object *)
+  DeptNbr : CARDINAL;
+  DeptName: ARRAY[0..40] OF CHAR;
+  Manager : CARDINAL;
+  Division: ARRAY[0..30] OF CHAR;
+  Location: ARRAY[0..30] OF CHAR;
+  MgrName : ARRAY[0..30] OF CHAR;
+  StaffLst: ListBox;
+  TotalSalary : LONGREAL;      (* summaries from staff records *)
+  AvgSalary   : LONGREAL;
+  MinSalary   : LONGREAL;
+  MaxSalary   : LONGREAL;
+  PROCEDURE GetStaffList();
+  PROCEDURE MakeDisplayLine();
+END Org;
+
+
+(****
+EXEC SQL END DECLARE SECTION;
+***)
+
+VAR
+  DispLine : ARRAY[0..80] OF CHAR;
+
+PROCEDURE GetOrgLst(VAR TheList : GenList);
+
+
+END Sample.
+

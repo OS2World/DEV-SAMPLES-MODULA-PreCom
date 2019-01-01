@@ -1,0 +1,33 @@
+Starting MOD2 procompiler for IBM Database Manager
+**** Error initializing precomiler services -4905 
+**** Error in compiled statement Error -4916  
+    Input statement -    INCLUDE SQLDA 
+SQL4916N  The "sqlainit" function has not been called.
+
+     *********
+**** Error in compiled statement Error -4916  
+    Input statement -    BEGIN DECLARE SECTION 
+SQL4916N  The "sqlainit" function has not been called.
+
+     *********
+**** Error in compiled statement Error -4916  
+    Input statement -    END DECLARE SECTION 
+SQL4916N  The "sqlainit" function has not been called.
+
+     *********
+**** Error in compiled statement Error -4916  
+    Input statement -    DECLARE C1_Staff CURSOR FOR    SELECT * FROM staff 
+SQL4916N  The "sqlainit" function has not been called.
+
+     *********
+**** Error in compiled statement Error -4916  
+    Input statement -    DECLARE C2_Org CURSOR FOR    Select Org.*, Staff.name from Org,staff    FROM Org, Staff    WHERE
+SQL4916N  The "sqlainit" function has not been called.
+
+     *********
+**** Error in compiled statement Error -4916  
+    Input statement -    DECLARE C2_Staff CURSOR FOR  SELECT Staff.* Org.* Staff.name  FROM org,Staff  WHERE  Staff.Depar
+SQL4916N  The "sqlainit" function has not been called.
+
+     *********
+END of precompiler 

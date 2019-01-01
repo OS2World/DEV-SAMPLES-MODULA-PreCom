@@ -1,0 +1,434 @@
+DEFINITION MODULE SQL;
+
+
+
+(*# call(o_a_size => off,
+         o_a_copy=>off,
+         result_optional=>on,
+         reg_saved => (si, di, ds, st1, st2),
+         reg_param => (),
+         seg_name => none,
+         near_call => off,
+         ds_eq_ss => off) *)
+(*# module(implementation=>off, init_code => off) *)
+(*# name(prefix => none) *)
+(*# data(near_ptr => off,var_enum_size=>off) *)
+(*# check(index=>off,range=>off,overflow=>off,nil_ptr=>off) *)
+
+
+
+(****************************************************************************
+
+   Module Name	  = SQL.H					     12/10/91
+
+   Descriptive Name = External Include File
+
+   Copyright = nnnnnnnn (C) Copyright IBM Corp. 1987, 1988, 1989, 1990
+	       Licensed Material - Program Property of IBM
+	       Refer to Copyright Instructions Form Number G120-3083
+
+   Function = Include File defining
+		System Constants
+		SQLCA/SQLDA Constants
+		Dynamic Link Interface to BINDER
+		Error Message Retrieval Interface
+		Authorization Constants
+
+   Operating System = OS/2 Extended Edition
+
+****************************************************************************)
+(* Required Include Files						   *)
+FROM SQLCA IMPORT sqlca;
+
+(* Operating System Control Parameters					   *)
+TYPE
+
+     SQL_API_RC = CARDINAL;
+     SQL_API_FN = ADDRESS;
+     SQL_POINTER = ADDRESS;	
+
+(* System Constants *)
+CONST
+   SQL_KEYPMAX       =	  16;   (* Maximum nbr of key parts in Index *)
+   SQL_KEYLMAX       =	 255;	(* Maximum key length		     *)
+   SQL_SORTFLDLM     =	 254;	(* Maximum size of field for sort    *)
+   SQL_MAXRECL       =	4005;	(* Maximum record length	     *)
+   SQL_MAXTABLES     =    15;   (* Maximum nbr of tables in a SELECT *)
+   SQL_MAXSEL_ITEM   =	 255;	(* Maximum nbr of items in a SELECT  *)
+   SQL_MAXVARS       =	 880;	(* Maximum nbr of unique Host Vars   *)
+   SQL_MAXVARS_STT   =	1489;	(* Maximum nbr of Host Vars per stmt *)
+   SQL_MAXSTMTS      =	 400;	(* Maximum nbr of Sections in a Plan *)
+   SQL_MAXCOLS       =	 255;	(* Maximum nbr of columns in a table *)
+   SQL_MAX_STMT_SIZ  = 32765;	(* Maximum statement size	     *)
+
+   SQL_SMALL_LENGTH  =	   2;	(* Size of a SMALLINT		     *)
+   SQL_MAXSMALLVAL   =  MAX(INTEGER);	(* Maximum value of a SMALLINT	     *)
+   SQL_MINSMALLVAL   =  MIN(INTEGER);	(* Minimum value of a SMALLINT	     *)
+   SQL_INT_LENGTH    =	   4;	(* Size of an INTEGER		     *)
+   SQL_MAXINTVAL   =MAX(LONGINT);	(* Maximum value of an INTEGER	     *)
+   SQL_MININTVAL   =MIN(LONGINT);	(* Minimum value of an INTEGER	     *)
+   SQL_FLOAT_LENGTH	=   8;	(* Size of a FLOAT		     *)
+   SQL_DEFDEC_PRECISION	=   5;	(* Default precision for DECIMAL     *)
+   SQL_DEFDEC_SCALE	=   0;	(* Default scale for DECIMAL	     *)
+   SQL_MAXDECIMAL	=  31;	(* Maximum scale/prec. for DECIMAL   *)
+   SQL_DEFCHAR		=   1;	(* Default length for a CHAR	     *)
+   SQL_MAXCHAR		= 254;	(* Maximum length of a CHAR	     *)
+   SQL_MAXLSTR		= 255;	(* Maximum length of an LSTRING      *)
+   SQL_MAXVCHAR =(SQL_MAXRECL-5);	(* Maximum length of a VARCHAR	     *)
+   SQL_MAXVGRAPH 	=2000;	(* Maximum length of a VARGRAPHIC    *)
+   SQL_VCHAROH		=   4;	(* Overhead for VARCHAR in record    *)
+   SQL_LONGMAX	       =32700;	(* Maximum length of a LONG VARCHAR  *)
+   SQL_LONGGRMAX       = 16350;	(* Max. length of a LONG VARGRAPHIC  *)
+   SQL_LVCHAROH		=  24;	(* Overhead for LONG VARCHAR in rec. *)
+   SQL_TIME_LENGTH	=   3;	(* Size of a TIME field 	     *)
+   SQL_TIME_STRLEN	=   8;	(* Size of a TIME field output	     *)
+   SQL_TIME_MINSTRLEN	=   5;	(* Size of a non-USA TIME field output
+					   without seconds		     *)
+   SQL_DATE_LENGTH	=   4;	(* Size of a DATE field 	     *)
+   SQL_DATE_STRLEN	=  10;	(* Size of a DATE field output	     *)
+   SQL_STAMP_LENGTH	=  10;	(* Size of a TIMESTAMP field	     *)
+   SQL_STAMP_STRLEN	=  26;	(* Size of a TIMESTAMP field output  *)
+   SQL_STAMP_MINSTRLEN	=  19;	(* Size of a TIMESTAMP field output
+					   without microseconds 	     *)
+   SQL_IND_LENGTH	=   2;	(* Size of a indicator value	     *)
+
+   SQL_LG_IDENT		=  18;	(* Maximum length of Long Identifer  *)
+   SQL_SH_IDENT		=   8;	(* Maximum length of Short Identifer *)
+   SQL_MN_IDENT		=   1;	(* Minimum length of Identifiers     *)
+   SQL_MAX_VAR_NAME	=  30;	(* Max size of Host Variable Name    *)
+
+
+
+(* Codepages *)
+   SQL_CP_437		 =437;	(* Codepage 437 - US, Europe	     *)
+   SQL_CP_819		 =819;	(* Codepage 819 - ISO 8859-1	     *)
+   SQL_CP_850		 =850;	(* Codepage 850 - International PC   *)
+   SQL_CP_860		 =860;	(* Codepage 860 - Portuguese	     *)
+   SQL_CP_863		 =863;	(* Codepage 863 - Canadian-French    *)
+   SQL_CP_865		 =865;	(* Codepage 865 - Norway, Denmark    *)
+   SQL_CP_891		 =891;	(* Codepage 891 - Korean	     *)
+   SQL_CP_897		 =897;	(* Codepage 897 - Japanese	     *)
+   SQL_CP_903		 =903;	(* Codepage 903 - Chinese	     *)
+   SQL_CP_904		 =904;	(* Codepage 904 - Taiwan	     *)
+   SQL_CP_1040		=1040;	(* Codepage 1040 - Extended Korean   *)
+   SQL_CP_1041		=1041;	(* Codepage 1041 - Extended Japanese *)
+   SQL_CP_1042		=1042;	(* Codepage 1042 - Extended Chinese  *)
+   SQL_CP_1043		=1043;	(* Codepage 1043 - Extended Taiwan   *)
+
+(* DBCS Codepages *)
+   SQL_CP_926		 =926;	(* Codepage 926 - Korean	     *)
+   SQL_CP_301		 =301;	(* Codepage 301 - Japanese	     *)
+   SQL_CP_928		 =928;	(* Codepage 928 - Chinese	     *)
+   SQL_CP_927		 =927;	(* Codepage 927 - Taiwan	     *)
+
+(* Combined Codepages *)
+   SQL_CP_934		 =934;	(* Codepage 891 + 926 - Korean	     *)
+   SQL_CP_932		 =932;	(* Codepage 897 + 301 - Japanese     *)
+   SQL_CP_936		 =936;  (* Codepage 903 + 928 - Chinese      *)
+   SQL_CP_938		 =938;	(* Codepage 904 + 927 - Taiwan	     *)
+   SQL_CP_944		 =944;	(* Codepage 1040 + 926 - Ext.Korean  *)
+   SQL_CP_942		 =942;	(* Codepage 1041 + 301 - Ext.Japanese*)
+   SQL_CP_946		 =946;	(* Codepage 1042 + 928 - Ext.Chinese *)
+   SQL_CP_948		 =948;	(* Codepage 1043 + 927 - Ext.Taiwan  *)
+
+(* Datastream Types *)
+   SQL_JPN_PC		 =1; (* Japanese-PC			   *)
+   SQL_CHN_PC		 =2; (* Chinese-PC			   *)
+   SQL_KOR_PC		 =3; (* Korean-PC 			   *)
+   SQL_SBC_PC		 =0; (* Single byte PC			   *)
+   SQL_UNKN_PC	     =255; (* Unknown				   *)
+
+(* SQLCA Constants *)
+
+   SQL_RC_INVALID_SQLCA	= -1;	(* Invalid SQLCA address *)
+
+(* Size of SQLCA *)
+   SQLCA_SIZE	 =SIZE( sqlca);
+
+(* SQL Error message token delimiter *)
+   SQL_ERRMC_PRES = 0FFH;		(* delimiter for string entry *)
+
+(* Offset in SQLERRD - Diagnostic information *)
+   SQL_ERRD_RC	 = 0;		(* return code *)
+   SQL_ERRD_REAS = 1;		(* reason code *)
+   SQL_ERRD_CNT	 = 2;		(* nbr rows inserted/updated/deleted *)
+   SQL_ERRD_OPTM = 3;		(* optimizer information *)
+   SQL_ERRD_DCNT = 4;		(* nbr of cascaded deletes/updates *)
+   SQL_ERRD_LINE = 4;		(* line number for recompile error *)
+   SQL_ERRD_DIAG = 5;		(* diagnostics *)
+
+(* Indexes in SQLWARN - Warning flags *)
+   SQL_WARN_ANY	  =0;		(* composite - set if any warnings *)
+   SQL_WARN_TRUNC =1;		(* string column truncated *)
+   SQL_WARN_NUL	  =2;		(* null values eliminated *)
+   SQL_WARN_MISM = 3;		(* nbr of columns/host vars mismatch *)
+   SQL_WARN_ALLR = 4;		(* no WHERE clause in update/delete *)
+   SQL_WARN_DATE = 6;		(* date has been truncated *)
+
+(* Values for Warning flags in SQLWARN *)
+   SQL_WARNING	 ='W';            (* warning indicator *)
+   SQL_NULL_TRN	 ='N';            (* null terminator truncated warning *)
+   SQL_NO_WARN	 =' ';            (* no warning indicator *)
+
+
+
+(* SQLDA Constants *)
+
+(* increment for type with null indicator *)
+   SQL_TYP_NULINC	=1;
+
+(* Variable Types *)
+   SQL_TYP_DATE	      =384;	(* DATE *)
+   SQL_TYP_NDATE      = (SQL_TYP_DATE+SQL_TYP_NULINC);
+
+   SQL_TYP_TIME	      =388;	(* TIME *)
+   SQL_TYP_NTIME      = (SQL_TYP_TIME+SQL_TYP_NULINC);
+
+   SQL_TYP_STAMP      = 392;	(* TIMESTAMP *)
+   SQL_TYP_NSTAMP     = (SQL_TYP_STAMP+SQL_TYP_NULINC);
+
+   SQL_TYP_VARCHAR    = 448;	(* VARCHAR(i) - varying length string
+							(2 byte length) *)
+   SQL_TYP_NVARCHAR   = (SQL_TYP_VARCHAR+SQL_TYP_NULINC);
+
+   SQL_TYP_CHAR	      = 452;	(* CHAR(i) - fixed length string *)
+   SQL_TYP_NCHAR      = (SQL_TYP_CHAR+SQL_TYP_NULINC);
+
+   SQL_TYP_LONG	      = 456;	(* LONG VARCHAR - varying length
+							  string *)
+   SQL_TYP_NLONG      = (SQL_TYP_LONG+SQL_TYP_NULINC);
+
+   SQL_TYP_CSTR	      = 460;	(* varying length string for C
+					    (null terminated) *)
+   SQL_TYP_NCSTR      = (SQL_TYP_CSTR+SQL_TYP_NULINC);
+
+   SQL_TYP_VARGRAPH   = 464;	(* VARGRAPHIC(i) - varying length
+					   graphic string (2 byte length) *)
+   SQL_TYP_NVARGRAPH  = (SQL_TYP_VARGRAPH+SQL_TYP_NULINC);
+
+   SQL_TYP_GRAPHIC    = 468;	(* GRAPHIC(i) - fixed length graphic
+					   string *)
+   SQL_TYP_NGRAPHIC   = (SQL_TYP_GRAPHIC+SQL_TYP_NULINC);
+
+   SQL_TYP_LONGRAPH   = 472;	(* LONG VARGRAPHIC(i) - varying length
+					   graphic string *)
+   SQL_TYP_NLONGRAPH  = (SQL_TYP_LONGRAPH+SQL_TYP_NULINC);
+
+   SQL_TYP_LSTR	      = 476;	(* varying length string for Pascal
+					    (1-byte length) *)
+   SQL_TYP_NLSTR      = (SQL_TYP_LSTR+SQL_TYP_NULINC);
+
+   SQL_TYP_FLOAT      = 480;	(* FLOAT - 8-byte floating point   *)
+   SQL_TYP_NFLOAT     = (SQL_TYP_FLOAT+SQL_TYP_NULINC);
+
+   SQL_TYP_DECIMAL    = 484;      (* DECIMAL (m,n) 		   *)
+   SQL_TYP_NDECIMAL   = (SQL_TYP_DECIMAL+SQL_TYP_NULINC);
+
+
+   SQL_TYP_INTEGER    = 496;	(* INTEGER - 4-byte signed integer *)
+   SQL_TYP_NINTEGER   = (SQL_TYP_INTEGER+SQL_TYP_NULINC);
+
+   SQL_TYP_SMALL      = 500;	(* SMALLINT - 2-byte signed integer*)
+   SQL_TYP_NSMALL     = (SQL_TYP_SMALL+SQL_TYP_NULINC);
+
+
+
+
+(* Return Codes for sqlabind and sqlabndr *)
+
+   SQLA_RC_BINDERROR	= -1;	(* Bind execution failed *)
+   SQLA_RC_BAD_BINDNAME	= -2;	(* Invalid bind file *)
+   SQLA_RC_BAD_DBNAME	= -3;	(* Invalid database *)
+   SQLA_RC_BAD_PASSWD	= -4;	(* Invalid password
+					   (not used after Release 2) *)
+   SQLA_RC_BAD_MSGNAME	= -5;	(* Invalid message file *)
+   SQLA_RC_BAD_FORMAT	= -6;	(* Invalid format *)
+   SQLA_RC_OPEN_ERROR	= -31;	(* Error opening list file *)
+   SQLA_RC_BAD_BNDFILE	= -39;	(* Bind file corrupted *)
+   SQLA_RC_LIST_ERROR	= -40;	(* Bind list errors *)
+   SQLA_RC_INTERRUPT	= -94;	(* Interrupt *)
+(* Additional return Codes for sqlabndr only *)
+   SQLA_RC_OPTION_LEN_BAD = -4903; (* Option array length is invalid *)
+   SQLA_RC_OPTION_PTR_BAD = -4904; (* Option array ptr is invalid	  *)
+   SQLA_RC_OPTION_SIZE_BAD= -4905; (* Option array size is invalid   *)
+   SQLA_RC_OPTION_DATA_BAD= -4917; (* Option array data is invalid   *)
+
+(* Values used for the date/time format parameter of sqlabind *)
+   SQL_FMT_DEF	     =  "DEF";    (* FORMAT = Default for Country Code *)
+   SQL_FMT_USA	     =  "USA";    (* FORMAT = USA   *)
+   SQL_FMT_EUR	     =  "EUR";    (* FORMAT = EUR   *)
+   SQL_FMT_ISO	     =  "ISO";    (* FORMAT = ISO   *)
+   SQL_FMT_JIS	     =  "JIS";    (* FORMAT = JIS   *)
+   SQL_FMT_LOC	     =  "LOC";    (* FORMAT = LOCAL *)
+
+
+
+(* Structures used system wide						   *)
+
+TYPE
+
+
+sqlchar = RECORD
+  Len : CARDINAL;
+  Data : ARRAY[0..255] OF CHAR;
+END;
+
+(* Structure used to store binder options when calling sqlabndr 	   *)
+
+sqloptheader = RECORD
+  allocated : LONGCARD;
+  used      : LONGCARD;
+END;
+
+sqlbindopt = RECORD
+  type : LONGCARD;
+  value: LONGCARD;
+END;
+
+sqlopt = RECORD
+  header : sqloptheader;
+  values : ARRAY[0..100] OF sqlbindopt;
+END;
+
+
+CONST
+(* Values used for option[n].type in the sqlopt structure of sqlabndr *)
+   SQL_FRMT_OPT		=  1;	(* Option for date/time format *)
+   SQL_ISO_OPT		=  4;	(* Option for isolation level *)
+   SQL_BLOCK_OPT 	=  5;	(* Option for record blocking *)
+   SQL_GRANT_OPT 	=  6;	(* Option for granting privileges *)
+
+(* Values used for option[n].val when option[n].type is SQL_FRMT_OPT *)
+(* These can be also be used for the date/time format parameter of sqlabind *)
+   SQL_FMT_0	=	 '0';    (* FORMAT = Default for Country Code *)
+   SQL_FMT_1	=	 '1';    (* FORMAT = USA   *)
+   SQL_FMT_2	=	 '2';    (* FORMAT = EUR   *)
+   SQL_FMT_3	=	 '3';    (* FORMAT = ISO   *)
+   SQL_FMT_4	=	 '4';    (* FORMAT = JIS   *)
+   SQL_FMT_5	=	 '5';    (* FORMAT = LOCAL *)
+
+(* Values used for option[n].val when option[n].type is SQL_ISO_OPT *)
+   SQL_REP_READ	=	  0;	(* Repeatable read level  *)
+   SQL_CURSOR_STAB=	  1;	(* Cursor stability level *)
+   SQL_UNCOM_READ=	  2;	(* Uncommitted read level *)
+
+(* Values used for option[n].val when option[n].type is SQL_BLOCK_OPT *)
+   SQL_BL_UNAMBIG	=  0;	(* Block Unambiguous cursors *)
+   SQL_BL_ALL		=  1;	(* Block All cursors *)
+   SQL_NO_BL		=  2;	(* Block No cursors *)
+
+
+
+(* Binder Interface Parameters/Return Codes *)
+
+(* SQL_API_RC  SQL_API_FN			 BINDER *)
+PROCEDURE  sqlabind (VAR ProgName, 	(* program name *)
+	                     DBName: ARRAY OF CHAR;    (* database *)
+	                 VAR C :CHAR; 	(* spare *)
+	                 VAR MessageFile : ARRAY OF CHAR; 	(* message file *)
+	                 VAR DateTime : ARRAY OF CHAR;	(* date/time format *)
+	                 VAR SQL_CA : sqlca ): INTEGER; 	(* SQLCA *)
+
+(* SQL_API_RC  SQL_API_FN	*)(*		BINDER *)
+PROCEDURE      sqlabndr (VAR ProgramName, 	(* program name *)
+	                         DBName, 	(* database *)
+	                         MessageFile: ARRAY OF CHAR;(* message file *)
+	                     VAR BinderOps  : sqlopt; 	(* binder options *)
+	                     VAR SQLCA      : sqlca ): CARDINAL; 	(* SQLCA *)
+
+(* Generic Dynamic Link Interface to the Binder *)
+(* SQL_API_RC  SQL_API_FN	*)		(* BINDER *)
+PROCEDURE  SQLGBIND (spare,		(* spare1 *)
+	                 MsgFileLen,		(* Message file length *)
+	                 FormatOptionLen,	(* Format option length *)
+	                 PlanNameLen,		(* Plan name length *)
+	                 DBNameLen : CARDINAL;		(* Database name length *)
+	                 VAR SQLca : sqlca; 	(* SQLCA *)
+	                 VAR Spare2, 	(* spare2 *)
+	                     MsgFile, 	(* Message file *)
+	                     DateTimeFmt, 	(* Date/time format *)
+	                     ProgName, 	(* Program name *)
+	                     DBName : ARRAY OF CHAR):CARDINAL;	(* Database *)
+	
+
+
+(* SQL_API_RC  SQL_API_FN *)			(* BINDER *)
+PROCEDURE SQLGBNDR (PlanNmLen,		(* Plan name length *)
+	                DBNmLen,		(* Database name length *)
+	                MsgFileLen: CARDINAL;		(* Message file length *)
+	                VAR ProgName, 	(* program name *)
+	                    DbName, 	(* database *)
+	                    MsgFile : ARRAY OF CHAR; 	(* message file *)
+	                VAR SQLOPT  : sqlopt;  	(* binder options *)
+	                VAR SQLCA   : sqlca ); 	(* SQLCA *)
+
+
+(* Error Message Retrieval Interface Parameters/Return Codes *)
+
+
+PROCEDURE sqlaintp_api (VAR buff : ARRAY OF CHAR;		(* buffer for message text *)
+		                BufSize : CARDINAL;		(* buffer size *)
+		                LineWidth:CARDINAL;		(* line width *)
+		                MsgFile : ARRAY OF CHAR;		(* message file *)
+		                VAR SqlCA : sqlca ):CARDINAL;	(* SQLCA *)
+
+(* Generic Dynamic Link Interface to Error Message Retrieval *)
+PROCEDURE SQLGINTP (BufSize : CARDINAL;		(* buffer size *)
+	                LineWidth : CARDINAL;			(* line width *)
+	                VAR SqlCA : sqlca;		(* SQLCA *)
+	                VAR Buff : ARRAY OF CHAR);	(* buffer *)
+
+
+CONST
+(* Return Codes for sqlaintp *)
+   SQLA_ERR_BADCC	= -1;	(* insufficient memory for msg file *)
+   SQLA_ERR_NOCOD	= -2;	(* no error code in SQLCA *)
+   SQLA_ERR_NOMSG	= -3;	(* requested message not found *)
+   SQLA_ERR_BADLL	= -4;	(* specified line length negative *)
+   SQLA_ERR_BADCA	= -5;	(* invalid sqlca/buffer addr/length *)
+
+
+
+(* Administrative/Database Authorizations returned from Get Administrative
+   Authorizations function *)
+
+(* Authorizations granted explicitly to user *)
+   SQL_SYSADM	   =    00001H;	(* SYSADM Authority    *)
+   SQL_DBADM	   =    00002H;	(* DBADM Authority     *)
+   SQL_CREATETAB   =    00004H;	(* CREATETAB Privilege *)
+   SQL_BINDADD	   =    00008H;	(* BINDADD Privilege   *)
+   SQL_CONNECT	   =    00010H;	(* CONNECT Privilege   *)
+
+(* Composite of authorizations granted explicitly to user,
+   to groups of which user is a member, and to PUBLIC *)
+
+(* the X 3 is to shift left 8 bits *)
+
+   SQL_SYSADM_GRP  =    (SQL_SYSADM * 3);
+   SQL_DBADM_GRP   =    (SQL_DBADM  * 3);
+   SQL_CREATETAB_GRP=   (SQL_CREATETAB *3);
+   SQL_BINDADD_GRP  =   (SQL_BINDADD * 3);
+   SQL_CONNECT_GRP  =   (SQL_CONNECT * 3);
+
+(* Table/View Authorizations/Dependencies Bit definitions
+   in SYSTABAUTH.TABAUTH and SYSPLANDEP.TABAUTH *)
+
+
+   SQL_TAB_CTL	  =    00001H;	(* Control Authority	       *)
+   SQL_TAB_ALT	  =    00002H;	(* Alter Privilege	       *)
+   SQL_TAB_DEL	  =    00004H;	(* Delete Privilege/Dependency *)
+   SQL_TAB_IDX	  =    00008H;	(* Index Privilege	       *)
+   SQL_TAB_INS	  =    00010H;	(* Insert Privilege/Dependency *)
+   SQL_TAB_SEL	  =    00020H;	(* Select Privilege/Dependency *)
+   SQL_TAB_UPD	  =    00040H;	(* Update Privilege/Dependency *)
+   SQL_TAB_REF	  =    00080H;	(* Reference Privilege	       *)
+   SQL_TAB_KEY	  =    02000H;	(* Key Dependency	       *)
+   SQL_TAB_CAS	  =    04000H;	(* Cascade Dependency	       *)
+
+(* Definitions for application remote interface *)
+
+   SQLZ_DISCONNECT_PROC	= 1;	(* Unload Progam		*)
+   SQLZ_HOLD_PROC	    = 2;	(* Keep program loaded		*)
+
+END SQL.
+

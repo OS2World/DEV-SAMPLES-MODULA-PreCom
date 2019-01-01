@@ -1,0 +1,133 @@
+IMPLEMENTATION MODULE Sample;
+FROM Lists IMPORT Element,GenList;
+FROM IO IMPORT WrStrRedirect;
+FROM FormIO IMPORT WrF,WrF1,WrF2,WrF3,WrF4,WrF5;
+FROM Str IMPORT Copy;
+
+
+IMPORT SQLPREP;
+
+
+EXEC SQL INCLUDE SQLDA;
+
+
+VAR
+  StaffRec : Staff;
+  OrgRec   : Org;
+
+
+PROCEDURE CopyDisplay(Line : ARRAY OF CHAR);
+(* intercept the WrFx calls an place in the global display line*)
+BEGIN
+ Copy(DispLine,Line);
+END CopyDisplay;
+
+
+
+CLASS IMPLEMENTATION Org;
+  (******************************************************)
+  (*   SQL CURSORS TO SUPPORT THE CLASS	                *)
+  (******************************************************)
+
+  EXEC SQL DECLARE GetOrgLst CURSOR FOR
+    SELECT * FROM ORG;
+
+  EXEC SQL DECLARE GetStaffLst CURSOR FOR
+    SELECT * FROM Staff
+    WHERE Dept=:DeptNbr;
+
+  EXEC SQL DECLARE GetOrg CURSOR FOR
+    SELECT * FROM Org
+    WHERE DeptNumb = :DeptNbr;
+
+  EXEC SQL DECLARE GetStats CURSOR FOR
+    SELECT AVG(Salary), MIN(Salary),
+           MAX(Salary),SUM(Salary)
+    FROM Staff
+    WHERE Dept = :DeptNbr;
+
+
+  PROCEDURE GetStaffList();
+  VAR AStaff : Staff;
+  BEGIN
+    EXEC SQL OPEN  GetStaffLst;
+    IF StaffLst.Initialized()
+      THEN StaffLst.Dispose
+      ELSE StaffLst.Initialize('');
+    END;
+    WITH AStaff DO
+        SQLca.sqlcode := 0;
+    	WHILE SQLca.sqlcode = 0 DO
+          	EXEC SQL FETCH GetStaffLst INTO
+            	:ID,:Name :NameNul,:DeptNbr :DeptNul,:Job :JobNul,:Years:YearNul,
+    		:Salary:SalNul,:Comm:ComNul;
+    		AStaff.MakeDisplayLine();
+           	StaffLst.AddElmt(AStaff);
+    	END;
+    	EXEC SQL CLOSE GetStaffLst;
+    END; (* with astaff *)
+    EXEC SQL OPEN GetStats;
+    EXEC SQL FETCH GetStats INTO
+         :AvgSalary,:MinSalary,:MaxSalary,:TotalSalary;
+    EXEC SQL CLOSE GetStats;
+
+  END GetStaffList;
+
+  PROCEDURE MakeDisplayLine();
+
+  BEGIN
+    WrF4('%3u  %12s  %12s  %18s',DeptNbr,DeptName,Division,Location  );
+    Assign(DispLine);
+  END MakeDisplayLine;
+
+BEGIN
+END Org;  (* end class implementation org *)
+
+(* utility to read org table *)
+
+  PROCEDURE GetOrgLst(VAR TheList : GenList);
+  VAR OrgUnit : Org;
+  BEGIN
+    EXEC SQL OPEN GetOrgLst;
+    IF TheList.Initialized()
+      THEN TheList.DisposeList;
+      ELSE TheList.InitList;
+    END;
+    SQLca.sqlcode := 0;
+    WHILE SQLca.sqlcode = 0 DO
+      WITH OrgUnit DO
+      EXEC SQL FETCH GetOrgLst INTO
+       :DeptNbr,:DeptName,:Manager,:Division,
+       :Location;
+      END;
+      OrgUnit.MakeDisplayLine();
+      TheList.AddItem(OrgUnit);
+
+    END;
+    EXEC SQL CLOSE getOrgLst;
+  END GetOrgLst;
+
+
+
+
+CLASS IMPLEMENTATION Staff;
+
+  PROCEDURE MakeDisplayLine();
+
+  BEGIN
+    WrF5('%12s  %4s  %4u  %8.2r,  %8.2r',Name,Job, Years,Salary,Comm );
+    Assign(DispLine);
+  END MakeDisplayLine;
+
+BEGIN
+END Staff;   (* end class implementation staff *)
+
+
+(* initialization code*)
+
+BEGIN
+  WrStrRedirect := CopyDisplay;   (* redirect output to copy display*)
+END Sample.
+
+
+

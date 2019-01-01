@@ -1,0 +1,44 @@
+DEFINITION MODULE Lists;
+
+(*# call(near_call => off) *)
+TYPE
+  ElmtPntr = POINTER TO Element;
+  ApplyProc = PROCEDURE(ElmtPntr );
+CLASS Element;
+  Prev : ElmtPntr;
+  Next : ElmtPntr;
+  ElmtSize : CARDINAL;
+END Element;
+
+CLASS StrElmt (Element);
+  TheStr : ARRAY[0..120] OF CHAR;
+  PROCEDURE Assign(AString : ARRAY OF CHAR);
+  PROCEDURE GetStr(VAR AString : ARRAY OF CHAR);
+END StrElmt;
+
+
+CLASS GenList;
+  First : ElmtPntr;
+  Last  : ElmtPntr;
+  Now   : ElmtPntr;
+  NowNbr: CARDINAL;
+  Type  : ARRAY[0..10] OF CHAR;
+  NbrInLst : CARDINAL;
+  PROCEDURE Initialized(): BOOLEAN;
+  PROCEDURE InitList;
+  PROCEDURE ListLength(): CARDINAL;
+  PROCEDURE DisposeList;
+  PROCEDURE AddItem(VAR Item : Element; Size : CARDINAL);
+  PROCEDURE InsertItem(VAR Item : Element; Spot : CARDINAL;Size : CARDINAL);
+  PROCEDURE DeleteItem(Spot : CARDINAL);
+  PROCEDURE GetItemSize(Spot : CARDINAL):CARDINAL;
+  PROCEDURE GetItem(VAR Item : Element; Spot:CARDINAL);
+  PROCEDURE GetItemAdr(VAR ItemPnt : ElmtPntr; Spot : CARDINAL);
+  PROCEDURE MoveToSpot(Spot : CARDINAL);
+  PROCEDURE Apply(Proc : ApplyProc);  (* apply to every elemt in list *)
+  PROCEDURE FileToList(FileName : ARRAY OF CHAR);
+  PROCEDURE ListToFile(FileName : ARRAY OF CHAR);
+END GenList;
+
+END Lists.
+
